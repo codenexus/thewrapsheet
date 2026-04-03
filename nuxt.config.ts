@@ -1,15 +1,12 @@
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
-
   nitro: {
     preset: 'node-server',
   },
-
   modules: [
     '@vite-pwa/nuxt',
   ],
-
   pwa: {
     manifest: {
       name: 'The Wrap Sheet',
@@ -30,13 +27,11 @@ export default defineNuxtConfig({
       ],
     },
   },
-
   runtimeConfig: {
     databaseUrl: '',
     supabaseUrl: '',
     supabaseSecretKey: '',
     anthropicApiKey: '',
-    mailgunSigningKey: '',
     mailgunApiKey: '',
     mailgunDomain: '',
     betterAuthSecret: '',
