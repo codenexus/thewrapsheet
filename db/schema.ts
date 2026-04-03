@@ -105,3 +105,26 @@ export type NewContact = typeof contacts.$inferInsert
 export type SocialHandle = typeof socialHandles.$inferSelect
 export type NewSocialHandle = typeof socialHandles.$inferInsert
 export type Image = typeof images.$inferSelect
+
+// ─── Relations ────────────────────────────────────────────────────────────────
+
+import { relations } from 'drizzle-orm'
+
+export const contactsRelations = relations(contacts, ({ many }) => ({
+  socialHandles: many(socialHandles),
+  images: many(images),
+}))
+
+export const socialHandlesRelations = relations(socialHandles, ({ one }) => ({
+  contact: one(contacts, {
+    fields: [socialHandles.contactId],
+    references: [contacts.id],
+  }),
+}))
+
+export const imagesRelations = relations(images, ({ one }) => ({
+  contact: one(contacts, {
+    fields: [images.contactId],
+    references: [contacts.id],
+  }),
+}))
