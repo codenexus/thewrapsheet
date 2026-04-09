@@ -7,23 +7,25 @@ export default defineNuxtConfig({
   modules: [
     '@vite-pwa/nuxt',
   ],
+  css: ['~/assets/main.css'],
+  app: {
+    head: {
+      link: [
+        { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
+        { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossorigin: '' },
+        { rel: 'stylesheet', href: 'https://fonts.googleapis.com/css2?family=Boogaloo&family=Fredoka:wght@300;400;500;600&display=swap' },
+      ],
+    },
+  },
   pwa: {
     manifest: {
       name: 'The Wrap Sheet',
       short_name: 'WrapSheet',
       description: 'Your personal black book',
-      theme_color: '#000000',
+      theme_color: '#1a1208',
       icons: [
-        {
-          src: 'pwa-192x192.png',
-          sizes: '192x192',
-          type: 'image/png',
-        },
-        {
-          src: 'pwa-512x512.png',
-          sizes: '512x512',
-          type: 'image/png',
-        },
+        { src: 'pwa-192x192.png', sizes: '192x192', type: 'image/png' },
+        { src: 'pwa-512x512.png', sizes: '512x512', type: 'image/png' },
       ],
     },
   },
