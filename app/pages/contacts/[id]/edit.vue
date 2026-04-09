@@ -18,12 +18,37 @@ async function handleSubmit(data: Record<string, any>) {
   error.value = ''
   try {
     const { socialHandles, ...contactData } = data
-    await $fetch(`/api/contacts/${id}`, {
+    console.log('Submitting PATCH:', id, contactData)
+
+    const result = await $fetch(`/api/contacts/${id}`, {
       method: 'PATCH',
       body: contactData,
     })
+
+    console.log('PATCH result:', result)
+
+    if (contact.value?.socialHandles?.length) {
+      await Promise.all(
+        contact.value.socialHandles.map((h: { id: string }) =>
+          $fetch(`/api/contacts/${id}/handles/${h.id}`, { method: 'DELETE' })
+        )
+      )
+    }
+
+    if (socialHandles?.length) {
+      await Promise.all(
+        socialHandles.map((h: { platform: string; handle: string }) =>
+          $fetch(`/api/contacts/${id}/handles`, {
+            method: 'POST',
+            body: h,
+          })
+        )
+      )
+    }
+
     router.push(`/contacts/${id}`)
   } catch (e: any) {
+    console.error('Submit error:', e)
     error.value = e.message ?? 'Failed to update contact'
   } finally {
     loading.value = false

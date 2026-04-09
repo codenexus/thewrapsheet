@@ -3,7 +3,7 @@ definePageMeta({ layout: 'default' })
 
 const route = useRoute()
 const router = useRouter()
-const id = route.params.id as string
+const id = Array.isArray(route.params.id) ? route.params.id[0] : route.params.id
 
 const { data: contact, refresh } = await useFetch(`/api/contacts/${id}`)
 
