@@ -43,6 +43,15 @@ async function clearReview() {
   })
   refresh()
 }
+
+function formatPhone(phone: string | null) {
+  if (!phone) return ''
+  const digits = phone.replace(/\D/g, '')
+  if (digits.length === 10) {
+    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`
+  }
+  return phone
+}
 </script>
 
 <template>
@@ -110,7 +119,7 @@ async function clearReview() {
           <div class="info-grid">
             <div v-if="contact.phone" class="info-item">
               <span class="info-label">Phone</span>
-              <span class="info-value">{{ contact.phone }}</span>
+              <span class="info-value">{{ formatPhone(contact.phone) }}</span>
             </div>
             <div v-if="contact.email" class="info-item">
               <span class="info-label">Email</span>

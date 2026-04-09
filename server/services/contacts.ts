@@ -2,6 +2,7 @@ import { db } from '../utils/db'
 import { contacts, socialHandles } from '../../db/schema'
 import { eq, and, or, ilike } from 'drizzle-orm'
 import type { NewContact, NewSocialHandle } from '../../db/schema'
+import { normalizePhone } from '../utils/phone'
 
 export async function getContacts(userId: string, status?: 'active' | 'archived') {
   return db.query.contacts.findMany({
@@ -21,14 +22,22 @@ export async function getContact(userId: string, contactId: string) {
 }
 
 export async function createContact(userId: string, data: Omit<NewContact, 'userId'>) {
-  const [contact] = await db.insert(contacts).values({ ...data, userId }).returning()
+  const [contact] = await db.insert(contacts).values({ 
+    ...data, 
+    userId,
+    phone: normalizePhone(data.phone),
+  }).returning()
   return contact
 }
 
 export async function updateContact(userId: string, contactId: string, data: Partial<NewContact>) {
   const [contact] = await db
     .update(contacts)
-    .set({ ...data, updatedAt: new Date() })
+    .set({ 
+      ...data, 
+      phone: data.phone !== undefined ? normalizePhone(data.phone) : undefined,
+      updatedAt: new Date() 
+    })
     .where(and(eq(contacts.userId, userId), eq(contacts.id, contactId)))
     .returning()
   return contact

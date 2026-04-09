@@ -8,6 +8,15 @@ const filtered = computed(() =>
   contacts.value?.filter(c => c.status === filter.value) ?? []
 )
 
+function formatPhone(phone: string | null) {
+  if (!phone) return ''
+  const digits = phone.replace(/\D/g, '')
+  if (digits.length === 10) {
+    return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`
+  }
+  return phone
+}
+
 watch(filter, () => refresh())
 </script>
 
@@ -65,7 +74,7 @@ watch(filter, () => refresh())
             <span v-if="contact.alias" class="contact-alias">"{{ contact.alias }}"</span>
           </div>
           <div v-if="contact.phone || contact.email" class="contact-detail">
-            {{ contact.phone ?? contact.email }}
+            {{ contact.phone ? formatPhone(contact.phone) : contact.email }}
           </div>
           <div v-if="contact.socialHandles?.length" class="contact-socials">
             <span

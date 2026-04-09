@@ -39,6 +39,20 @@ function handleSubmit() {
     socialHandles: socialHandles.value.filter(h => h.platform && h.handle),
   })
 }
+
+function formatPhoneInput(e: Event) {
+  const input = e.target as HTMLInputElement
+  const digits = input.value.replace(/\D/g, '').slice(0, 10)
+  let formatted = digits
+  if (digits.length >= 7) {
+    formatted = `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`
+  } else if (digits.length >= 4) {
+    formatted = `(${digits.slice(0, 3)}) ${digits.slice(3)}`
+  } else if (digits.length >= 1) {
+    formatted = `(${digits}`
+  }
+  form.phone = formatted
+}
 </script>
 
 <template>
@@ -72,7 +86,12 @@ function handleSubmit() {
       <div class="form-row">
         <div class="form-group">
           <label>Phone</label>
-          <input v-model="form.phone" type="tel" placeholder="Phone number" />
+          <input 
+            v-model="form.phone" 
+            type="tel" 
+            placeholder="(555) 555-5555"
+            @input="formatPhoneInput"
+          />
         </div>
         <div class="form-group">
           <label>Email</label>
