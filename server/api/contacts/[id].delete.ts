@@ -1,5 +1,5 @@
 import { auth } from '../../utils/auth'
-import { archiveContact } from '../../services/contacts'
+import { deleteContact } from '../../services/contacts'
 
 export default defineEventHandler(async (event) => {
   const session = await auth.api.getSession({ headers: event.headers })
@@ -7,5 +7,6 @@ export default defineEventHandler(async (event) => {
 
   const id = getRouterParam(event, 'id')!
 
-  return archiveContact(session.user.id, id)
+  await deleteContact(session.user.id, id)
+  return { success: true }
 })

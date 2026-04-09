@@ -30,6 +30,12 @@ async function archiveContact() {
   router.push('/')
 }
 
+async function deleteContactPermanently() {
+  if (!confirm('Permanently delete this contact? This cannot be undone.')) return
+  await $fetch(`/api/contacts/${id}`, { method: 'DELETE' })
+  router.push('/')
+}
+
 async function clearReview() {
   await $fetch(`/api/contacts/${id}`, {
     method: 'PATCH',
@@ -43,10 +49,11 @@ async function clearReview() {
   <div class="page" v-if="contact">
     <div class="detail-header">
       <NuxtLink to="/" class="btn btn-ghost back-btn">← Back</NuxtLink>
-      <div class="detail-actions">
-        <NuxtLink :to="`/contacts/${id}/edit`" class="btn btn-secondary">Edit</NuxtLink>
-        <button class="btn btn-ghost danger" @click="archiveContact">Archive</button>
-      </div>
+        <div class="detail-actions">
+          <NuxtLink :to="`/contacts/${id}/edit`" class="btn btn-secondary">Edit</NuxtLink>
+          <button class="btn btn-ghost" @click="archiveContact">Archive</button>
+          <button class="btn btn-ghost danger" @click="deleteContactPermanently">Delete</button>
+        </div>
     </div>
 
     <div v-if="contact.needsReview" class="review-banner">

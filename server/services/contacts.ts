@@ -64,3 +64,9 @@ export async function removeSocialHandle(contactId: string, handleId: string) {
     and(eq(socialHandles.id, handleId), eq(socialHandles.contactId, contactId))
   )
 }
+
+export async function deleteContact(userId: string, contactId: string) {
+  await db.delete(contacts).where(
+    and(eq(contacts.userId, userId), eq(contacts.id, contactId))
+  )
+}
