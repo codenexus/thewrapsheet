@@ -7,6 +7,19 @@ const id = Array.isArray(route.params.id) ? route.params.id[0] : route.params.id
 
 const { data: contact, refresh } = await useFetch(`/api/contacts/${id}`)
 
+const signedPhotoUrl = ref<string | null>(null)
+
+onMounted(async () => {
+  if (contact.value?.mainPhotoUrl) {
+    try {
+      const { signedUrl } = await $fetch<{ signedUrl: string }>('/api/photos/signed-url', {
+        params: { path: contact.value.mainPhotoUrl },
+      })
+      signedPhotoUrl.value = signedUrl
+    } catch {}
+  }
+})
+
 if (!contact.value) {
   throw createError({ statusCode: 404, message: 'Contact not found' })
 }
@@ -44,7 +57,7 @@ async function clearReview() {
     <div class="detail-layout">
       <div class="detail-sidebar">
         <div class="avatar-large">
-          <img v-if="contact.mainPhotoUrl" :src="contact.mainPhotoUrl" :alt="contact.firstName" />
+          <img v-if="signedPhotoUrl" :src="signedPhotoUrl" :alt="contact.firstName" />
           <span v-else class="avatar-initials-large">
             {{ contact.firstName[0] }}{{ contact.lastName?.[0] ?? '' }}
           </span>

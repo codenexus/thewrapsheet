@@ -63,7 +63,7 @@ async function handleSubmit(data: Record<string, any>) {
       <h1 class="page-title">Edit Contact</h1>
     </div>
     <div v-if="error" class="error-banner">{{ error }}</div>
-    <ContactForm :initial="contact" :loading="loading" @submit="handleSubmit" />
+    <ContactForm :initial="contact" :contact-id="id" :loading="loading" @submit="handleSubmit" />
   </div>
 </template>
 

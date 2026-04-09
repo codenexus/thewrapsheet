@@ -2,6 +2,7 @@
 const props = defineProps<{
   initial?: Record<string, any>
   loading?: boolean
+  contactId?: string
 }>()
 
 const emit = defineEmits<{
@@ -42,6 +43,12 @@ function handleSubmit() {
 
 <template>
   <form class="contact-form" @submit.prevent="handleSubmit">
+
+    <div class="form-section" v-if="contactId">
+      <h2 class="form-section-title">Photo</h2>
+      <PhotoUpload :contact-id="contactId" :current-path="initial?.mainPhotoUrl" />
+    </div>
+
     <div class="form-section">
       <h2 class="form-section-title">Identity</h2>
       <div class="form-row">
