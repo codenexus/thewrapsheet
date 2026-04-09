@@ -1,7 +1,7 @@
 import { db } from '../utils/db'
-import { contacts, socialHandles } from '../../db/schema.ts'
+import { contacts, socialHandles } from '../../db/schema'
 import { eq, and, or, ilike } from 'drizzle-orm'
-import type { NewContact, NewSocialHandle } from '../../db/schema.ts'
+import type { NewContact, NewSocialHandle } from '../../db/schema'
 
 export async function getContacts(userId: string, status?: 'active' | 'archived') {
   return db.query.contacts.findMany({
