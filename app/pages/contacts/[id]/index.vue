@@ -80,15 +80,17 @@ function formatPhone(phone: string | null) {
         </div>
 
         <div class="indicators-large">
-          <div class="indicator-row" :class="{ active: contact.hotdog }">
-            <span class="ind-emoji">🌭</span>
-            <span class="ind-label">Hotdog</span>
-            <span class="ind-status">{{ contact.hotdog ? 'Yes' : 'No' }}</span>
+          <div
+            v-for="flag in contact.contactFlags"
+            :key="flag.id"
+            class="indicator-row active"
+          >
+            <span class="ind-emoji">{{ flag.flag.emoji }}</span>
+            <span class="ind-label">{{ flag.flag.label }}</span>
+            <span class="ind-status">Yes</span>
           </div>
-          <div class="indicator-row" :class="{ active: contact.taco }">
-            <span class="ind-emoji">🌮</span>
-            <span class="ind-label">Taco</span>
-            <span class="ind-status">{{ contact.taco ? 'Yes' : 'No' }}</span>
+          <div v-if="!contact.contactFlags?.length" class="indicator-row">
+            <span class="ind-label" style="color: var(--text-dim)">No flags set</span>
           </div>
         </div>
 

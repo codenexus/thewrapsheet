@@ -85,8 +85,12 @@ watch(filter, () => refresh())
           </div>
         </div>
         <div class="contact-indicators">
-          <span class="indicator" :class="{ active: contact.hotdog }" title="Hotdog">🌭</span>
-          <span class="indicator" :class="{ active: contact.taco }" title="Taco">🌮</span>
+          <span
+            v-for="flag in contact.contactFlags"
+            :key="flag.id"
+            class="indicator active"
+            :title="flag.flag.label"
+          >{{ flag.flag.emoji }}</span>
           <span v-if="contact.needsReview" class="indicator active review" title="Needs Review">⚠️</span>
         </div>
       </NuxtLink>

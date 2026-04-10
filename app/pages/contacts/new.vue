@@ -9,11 +9,36 @@ async function handleSubmit(data: Record<string, any>) {
   loading.value = true
   error.value = ''
   try {
-    const { socialHandles, ...contactData } = data
-    const contact = await $fetch('/api/contacts', {
+    const { socialHandles, selectedFlagIds, ...contactData } = data
+    const contact = await $fetch<{ id: string }>('/api/contacts', {
       method: 'POST',
       body: contactData,
     })
+
+    // Save social handles
+    if (socialHandles?.length) {
+      await Promise.all(
+        socialHandles.map((h: { platform: string; handle: string }) =>
+          $fetch(`/api/contacts/${contact.id}/handles`, {
+            method: 'POST',
+            body: h,
+          })
+        )
+      )
+    }
+
+    // Save flags
+    if (selectedFlagIds?.length) {
+      await Promise.all(
+        selectedFlagIds.map((flagId: string) =>
+          $fetch(`/api/contacts/${contact.id}/flags`, {
+            method: 'POST',
+            body: { flagId },
+          })
+        )
+      )
+    }
+
     router.push(`/contacts/${contact.id}`)
   } catch (e: any) {
     error.value = e.message ?? 'Failed to save contact'

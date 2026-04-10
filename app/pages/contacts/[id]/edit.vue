@@ -17,16 +17,14 @@ async function handleSubmit(data: Record<string, any>) {
   loading.value = true
   error.value = ''
   try {
-    const { socialHandles, ...contactData } = data
-    console.log('Submitting PATCH:', id, contactData)
+    const { socialHandles, selectedFlagIds, ...contactData } = data
 
-    const result = await $fetch(`/api/contacts/${id}`, {
+    await $fetch(`/api/contacts/${id}`, {
       method: 'PATCH',
       body: contactData,
     })
 
-    console.log('PATCH result:', result)
-
+    // Delete existing handles then re-add
     if (contact.value?.socialHandles?.length) {
       await Promise.all(
         contact.value.socialHandles.map((h: { id: string }) =>
@@ -41,6 +39,26 @@ async function handleSubmit(data: Record<string, any>) {
           $fetch(`/api/contacts/${id}/handles`, {
             method: 'POST',
             body: h,
+          })
+        )
+      )
+    }
+
+    // Delete existing flags then re-add
+    if (contact.value?.contactFlags?.length) {
+      await Promise.all(
+        contact.value.contactFlags.map((cf: { flagId: string }) =>
+          $fetch(`/api/contacts/${id}/flags/${cf.flagId}`, { method: 'DELETE' })
+        )
+      )
+    }
+
+    if (selectedFlagIds?.length) {
+      await Promise.all(
+        selectedFlagIds.map((flagId: string) =>
+          $fetch(`/api/contacts/${id}/flags`, {
+            method: 'POST',
+            body: { flagId },
           })
         )
       )

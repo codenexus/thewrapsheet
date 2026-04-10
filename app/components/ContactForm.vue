@@ -15,8 +15,6 @@ const form = reactive({
   alias: props.initial?.alias ?? '',
   phone: props.initial?.phone ?? '',
   email: props.initial?.email ?? '',
-  hotdog: props.initial?.hotdog ?? false,
-  taco: props.initial?.taco ?? false,
   status: props.initial?.status ?? 'active',
   notes: props.initial?.notes ?? '',
 })
@@ -25,19 +23,27 @@ const socialHandles = ref<{ platform: string; handle: string }[]>(
   props.initial?.socialHandles?.map((h: any) => ({ platform: h.platform, handle: h.handle })) ?? []
 )
 
+const { data: userFlags } = await useFetch('/api/flags')
+
+const selectedFlagIds = ref<string[]>(
+  props.initial?.contactFlags?.map((cf: any) => cf.flagId) ?? []
+)
+
+function toggleFlag(flagId: string) {
+  const idx = selectedFlagIds.value.indexOf(flagId)
+  if (idx === -1) {
+    selectedFlagIds.value.push(flagId)
+  } else {
+    selectedFlagIds.value.splice(idx, 1)
+  }
+}
+
 function addHandle() {
   socialHandles.value.push({ platform: '', handle: '' })
 }
 
 function removeHandle(i: number) {
   socialHandles.value.splice(i, 1)
-}
-
-function handleSubmit() {
-  emit('submit', {
-    ...form,
-    socialHandles: socialHandles.value.filter(h => h.platform && h.handle),
-  })
 }
 
 function formatPhoneInput(e: Event) {
@@ -52,6 +58,14 @@ function formatPhoneInput(e: Event) {
     formatted = `(${digits}`
   }
   form.phone = formatted
+}
+
+function handleSubmit() {
+  emit('submit', {
+    ...form,
+    socialHandles: socialHandles.value.filter(h => h.platform && h.handle),
+    selectedFlagIds: selectedFlagIds.value,
+  })
 }
 </script>
 
@@ -86,9 +100,9 @@ function formatPhoneInput(e: Event) {
       <div class="form-row">
         <div class="form-group">
           <label>Phone</label>
-          <input 
-            v-model="form.phone" 
-            type="tel" 
+          <input
+            v-model="form.phone"
+            type="tel"
             placeholder="(555) 555-5555"
             @input="formatPhoneInput"
           />
@@ -113,19 +127,26 @@ function formatPhoneInput(e: Event) {
     </div>
 
     <div class="form-section">
-      <h2 class="form-section-title">The Important Stuff</h2>
-      <div class="toggle-row">
-        <label class="toggle-label" :class="{ active: form.hotdog }">
-          <input type="checkbox" v-model="form.hotdog" />
-          <span class="toggle-emoji">🌭</span>
-          <span>Gave a hotdog</span>
-          <span class="toggle-check">{{ form.hotdog ? '✓' : '' }}</span>
-        </label>
-        <label class="toggle-label" :class="{ active: form.taco }">
-          <input type="checkbox" v-model="form.taco" />
-          <span class="toggle-emoji">🌮</span>
-          <span>Received a taco</span>
-          <span class="toggle-check">{{ form.taco ? '✓' : '' }}</span>
+      <h2 class="form-section-title">Flags</h2>
+      <div v-if="!userFlags?.length" class="no-flags">
+        No flags defined yet.
+        <NuxtLink to="/settings">Add flags in Settings</NuxtLink>
+      </div>
+      <div v-else class="toggle-row">
+        <label
+          v-for="flag in userFlags"
+          :key="flag.id"
+          class="toggle-label"
+          :class="{ active: selectedFlagIds.includes(flag.id) }"
+        >
+          <input
+            type="checkbox"
+            :checked="selectedFlagIds.includes(flag.id)"
+            @change="toggleFlag(flag.id)"
+          />
+          <span class="toggle-emoji">{{ flag.emoji }}</span>
+          <span>{{ flag.label }}</span>
+          <span class="toggle-check">{{ selectedFlagIds.includes(flag.id) ? '✓' : '' }}</span>
         </label>
       </div>
     </div>
@@ -216,6 +237,16 @@ function formatPhoneInput(e: Event) {
 
 .toggle-emoji { font-size: 1.3rem; }
 .toggle-check { margin-left: auto; color: var(--yellow); font-weight: 700; }
+
+.no-flags {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.no-flags a {
+  color: var(--yellow);
+  text-decoration: underline;
+}
 
 .form-actions {
   display: flex;

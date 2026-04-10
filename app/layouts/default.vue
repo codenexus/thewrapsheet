@@ -19,6 +19,7 @@ async function signOut() {
         <nav class="nav-links">
           <NuxtLink to="/" class="nav-link">Contacts</NuxtLink>
           <NuxtLink to="/review" class="nav-link">Review Queue</NuxtLink>
+          <NuxtLink to="/settings" class="nav-link">Settings</NuxtLink>
         </nav>
         <button class="btn btn-ghost signout-btn" @click="signOut">
           Sign out

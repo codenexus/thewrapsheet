@@ -1,5 +1,5 @@
 import { db } from '../utils/db'
-import { contacts, socialHandles } from '../../db/schema'
+import { contacts, socialHandles, userFlags, contactFlags } from '../../db/schema'
 import { eq, and, or, ilike } from 'drizzle-orm'
 import type { NewContact, NewSocialHandle } from '../../db/schema'
 import { normalizePhone } from '../utils/phone'
@@ -9,7 +9,10 @@ export async function getContacts(userId: string, status?: 'active' | 'archived'
     where: status
       ? and(eq(contacts.userId, userId), eq(contacts.status, status))
       : eq(contacts.userId, userId),
-    with: { socialHandles: true },
+    with: { 
+      socialHandles: true,
+      contactFlags: { with: { flag: true } },
+    },
     orderBy: (contacts, { asc }) => [asc(contacts.firstName)],
   })
 }
@@ -17,7 +20,10 @@ export async function getContacts(userId: string, status?: 'active' | 'archived'
 export async function getContact(userId: string, contactId: string) {
   return db.query.contacts.findFirst({
     where: and(eq(contacts.userId, userId), eq(contacts.id, contactId)),
-    with: { socialHandles: true },
+    with: { 
+      socialHandles: true,
+      contactFlags: { with: { flag: true } },
+    },
   })
 }
 
@@ -77,5 +83,52 @@ export async function removeSocialHandle(contactId: string, handleId: string) {
 export async function deleteContact(userId: string, contactId: string) {
   await db.delete(contacts).where(
     and(eq(contacts.userId, userId), eq(contacts.id, contactId))
+  )
+}
+
+export async function getUserFlags(userId: string) {
+  return db.query.userFlags.findMany({
+    where: eq(userFlags.userId, userId),
+    orderBy: (userFlags, { asc }) => [asc(userFlags.sortOrder)],
+  })
+}
+
+export async function createUserFlag(userId: string, data: { emoji: string; label: string; sortOrder: number }) {
+  const [flag] = await db.insert(userFlags).values({ ...data, userId }).returning()
+  return flag
+}
+
+export async function deleteUserFlag(userId: string, flagId: string) {
+  await db.delete(userFlags).where(
+    and(eq(userFlags.id, flagId), eq(userFlags.userId, userId))
+  )
+}
+
+export async function updateUserFlag(userId: string, flagId: string, data: { emoji?: string; label?: string; sortOrder?: number }) {
+  const [flag] = await db.update(userFlags).set(data).where(
+    and(eq(userFlags.id, flagId), eq(userFlags.userId, userId))
+  ).returning()
+  return flag
+}
+
+export async function getContactFlags(contactId: string) {
+  return db.query.contactFlags.findMany({
+    where: eq(contactFlags.contactId, contactId),
+    with: { flag: true },
+  })
+}
+
+export async function setContactFlag(contactId: string, flagId: string) {
+  const existing = await db.query.contactFlags.findFirst({
+    where: and(eq(contactFlags.contactId, contactId), eq(contactFlags.flagId, flagId)),
+  })
+  if (!existing) {
+    await db.insert(contactFlags).values({ contactId, flagId })
+  }
+}
+
+export async function unsetContactFlag(contactId: string, flagId: string) {
+  await db.delete(contactFlags).where(
+    and(eq(contactFlags.contactId, contactId), eq(contactFlags.flagId, flagId))
   )
 }
