@@ -86,7 +86,7 @@ watch(filter, () => refresh())
         </div>
         <div class="contact-indicators">
           <span
-            v-for="flag in contact.contactFlags"
+            v-for="flag in [...(contact.contactFlags ?? [])].sort((a, b) => a.flag.sortOrder - b.flag.sortOrder)"
             :key="flag.id"
             class="indicator active"
             :title="flag.flag.label"

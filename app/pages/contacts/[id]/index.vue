@@ -97,7 +97,7 @@ function calculateAge(birthday: string) {
 
         <div class="indicators-large">
           <div
-            v-for="flag in contact.contactFlags"
+            v-for="flag in [...(contact.contactFlags ?? [])].sort((a, b) => a.flag.sortOrder - b.flag.sortOrder)"
             :key="flag.id"
             class="indicator-row active"
           >
