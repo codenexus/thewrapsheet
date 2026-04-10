@@ -32,6 +32,7 @@ export async function createContact(userId: string, data: Omit<NewContact, 'user
     ...data, 
     userId,
     phone: normalizePhone(data.phone),
+    birthday: data.birthday === '' ? null : data.birthday,
   }).returning()
   return contact
 }
@@ -42,6 +43,7 @@ export async function updateContact(userId: string, contactId: string, data: Par
     .set({ 
       ...data, 
       phone: data.phone !== undefined ? normalizePhone(data.phone) : undefined,
+      birthday: data.birthday === '' ? null : data.birthday,
       updatedAt: new Date() 
     })
     .where(and(eq(contacts.userId, userId), eq(contacts.id, contactId)))
