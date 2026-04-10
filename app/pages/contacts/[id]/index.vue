@@ -26,7 +26,7 @@ if (!contact.value) {
 
 async function archiveContact() {
   if (!confirm('Archive this contact?')) return
-  await $fetch(`/api/contacts/${id}`, { method: 'DELETE' })
+  await $fetch(`/api/contacts/${id}`, { method: 'PATCH', body: { status: 'archived' } })
   router.push('/')
 }
 
@@ -52,17 +52,33 @@ function formatPhone(phone: string | null) {
   }
   return phone
 }
+
+function formatBirthday(birthday: string) {
+  const date = new Date(birthday + 'T00:00:00')
+  return date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+}
+
+function calculateAge(birthday: string) {
+  const today = new Date()
+  const birth = new Date(birthday + 'T00:00:00')
+  let age = today.getFullYear() - birth.getFullYear()
+  const monthDiff = today.getMonth() - birth.getMonth()
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+    age--
+  }
+  return `${age} years old`
+}
 </script>
 
 <template>
   <div class="page" v-if="contact">
     <div class="detail-header">
       <NuxtLink to="/" class="btn btn-ghost back-btn">← Back</NuxtLink>
-        <div class="detail-actions">
-          <NuxtLink :to="`/contacts/${id}/edit`" class="btn btn-secondary">Edit</NuxtLink>
-          <button class="btn btn-ghost" @click="archiveContact">Archive</button>
-          <button class="btn btn-ghost danger" @click="deleteContactPermanently">Delete</button>
-        </div>
+      <div class="detail-actions">
+        <NuxtLink :to="`/contacts/${id}/edit`" class="btn btn-secondary">Edit</NuxtLink>
+        <button class="btn btn-ghost" @click="archiveContact">Archive</button>
+        <button class="btn btn-ghost danger" @click="deleteContactPermanently">Delete</button>
+      </div>
     </div>
 
     <div v-if="contact.needsReview" class="review-banner">
@@ -126,6 +142,20 @@ function formatPhone(phone: string | null) {
             <div v-if="contact.email" class="info-item">
               <span class="info-label">Email</span>
               <span class="info-value">{{ contact.email }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="info-section" v-if="contact.birthday">
+          <h2 class="section-title">Birthday</h2>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">Date</span>
+              <span class="info-value">{{ formatBirthday(contact.birthday) }}</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Age</span>
+              <span class="info-value">{{ calculateAge(contact.birthday) }}</span>
             </div>
           </div>
         </div>

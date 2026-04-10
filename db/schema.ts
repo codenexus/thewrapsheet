@@ -6,6 +6,7 @@ import {
   timestamp,
   pgEnum,
   integer,
+  date,
 } from 'drizzle-orm/pg-core'
 import { relations } from 'drizzle-orm'
 
@@ -72,6 +73,7 @@ export const contacts = pgTable('contacts', {
   alias: text('alias'),
   phone: text('phone'),
   email: text('email'),
+  birthday: date('birthday'),
   status: contactStatusEnum('status').notNull().default('active'),
   mainPhotoUrl: text('main_photo_url'),
   notes: text('notes'),

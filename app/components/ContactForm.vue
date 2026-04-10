@@ -15,6 +15,7 @@ const form = reactive({
   alias: props.initial?.alias ?? '',
   phone: props.initial?.phone ?? '',
   email: props.initial?.email ?? '',
+  birthday: props.initial?.birthday ?? '',
   status: props.initial?.status ?? 'active',
   notes: props.initial?.notes ?? '',
 })
@@ -93,6 +94,10 @@ function handleSubmit() {
         <label>Alias / Nickname</label>
         <input v-model="form.alias" placeholder="What do you call them?" />
       </div>
+    </div>
+    <div class="form-group">
+      <label>Birthday</label>
+      <input v-model="form.birthday" type="date" />
     </div>
 
     <div class="form-section">
