@@ -17,6 +17,18 @@ function formatPhone(phone: string | null) {
   return phone
 }
 
+function calculateAge(birthday: string | null) {
+  if (!birthday) return null
+  const today = new Date()
+  const birth = new Date(birthday + 'T00:00:00')
+  let age = today.getFullYear() - birth.getFullYear()
+  const monthDiff = today.getMonth() - birth.getMonth()
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+    age--
+  }
+  return age
+}
+
 watch(filter, () => refresh())
 </script>
 
@@ -74,7 +86,11 @@ watch(filter, () => refresh())
             <span v-if="contact.alias" class="contact-alias">"{{ contact.alias }}"</span>
           </div>
           <div v-if="contact.phone || contact.email" class="contact-detail">
-            {{ contact.phone ? formatPhone(contact.phone) : contact.email }}
+            <span v-if="contact.phone">{{ formatPhone(contact.phone) }}</span>
+            <span v-else-if="contact.email">{{ contact.email }}</span>
+          </div>
+          <div v-if="contact.birthday" class="contact-age">
+            {{ calculateAge(contact.birthday) }} years old
           </div>
           <div v-if="contact.socialHandles?.length" class="contact-socials">
             <span
@@ -246,6 +262,12 @@ watch(filter, () => refresh())
   gap: 0.4rem;
   margin-top: 0.35rem;
   flex-wrap: wrap;
+}
+
+.contact-age {
+  font-size: 0.82rem;
+  color: var(--text-dim);
+  margin-top: 0.15rem;
 }
 
 .social-pill {

@@ -103,7 +103,6 @@ function calculateAge(birthday: string) {
           >
             <span class="ind-emoji">{{ flag.flag.emoji }}</span>
             <span class="ind-label">{{ flag.flag.label }}</span>
-            <span class="ind-status">Yes</span>
           </div>
           <div v-if="!contact.contactFlags?.length" class="indicator-row">
             <span class="ind-label" style="color: var(--text-dim)">No flags set</span>
