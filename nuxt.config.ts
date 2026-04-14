@@ -1,17 +1,24 @@
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
+
   nitro: {
     preset: 'node-server',
   },
+
   modules: [
     '@vite-pwa/nuxt',
     '@sentry/nuxt/module',
   ],
+
   sentry: {
     autoInjectServerSentry: 'top-level-import',
+    org: 'codenexus',
+    project: 'thewrapsheet',
   },
+
   css: ['~/assets/main.css'],
+
   app: {
     head: {
       link: [
@@ -21,6 +28,7 @@ export default defineNuxtConfig({
       ],
     },
   },
+
   pwa: {
     manifest: {
       name: 'The Wrap Sheet',
@@ -36,6 +44,7 @@ export default defineNuxtConfig({
       navigateFallback: null,
     },
   },
+
   runtimeConfig: {
     databaseUrl: '',
     supabaseUrl: '',
@@ -47,5 +56,9 @@ export default defineNuxtConfig({
     public: {
       betterAuthUrl: '',
     },
+  },
+
+  sourcemap: {
+    client: 'hidden',
   },
 })
