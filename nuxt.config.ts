@@ -29,6 +29,9 @@ export default defineNuxtConfig({
         { src: 'pwa-512x512.png', sizes: '512x512', type: 'image/png' },
       ],
     },
+    workbox: {
+      navigateFallback: null,
+    },
   },
   runtimeConfig: {
     databaseUrl: '',
