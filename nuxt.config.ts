@@ -8,6 +8,9 @@ export default defineNuxtConfig({
     '@vite-pwa/nuxt',
     '@sentry/nuxt/module',
   ],
+  sentry: {
+    autoInjectServerSentry: 'top-level-import',
+  },
   css: ['~/assets/main.css'],
   app: {
     head: {
