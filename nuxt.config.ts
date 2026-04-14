@@ -6,6 +6,7 @@ export default defineNuxtConfig({
   },
   modules: [
     '@vite-pwa/nuxt',
+    '@sentry/nuxt/module',
   ],
   css: ['~/assets/main.css'],
   app: {
