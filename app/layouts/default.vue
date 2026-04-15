@@ -14,7 +14,7 @@ async function signOut() {
     <header class="topnav">
       <div class="topnav-inner">
         <NuxtLink to="/" class="wordmark">
-          🌮 The Wrap Sheet
+          🌯 The Wrap Sheet
         </NuxtLink>
         <nav class="nav-links">
           <NuxtLink to="/" class="nav-link">Contacts</NuxtLink>

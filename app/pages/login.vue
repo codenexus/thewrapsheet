@@ -24,7 +24,7 @@ definePageMeta({ layout: false })
 <template>
   <div class="login-page">
     <div class="login-card">
-      <div class="login-logo">🌮</div>
+      <div class="login-logo">🌯</div>
       <h1 class="login-title">The Wrap Sheet</h1>
       <p class="login-sub">Your personal black book</p>
 
