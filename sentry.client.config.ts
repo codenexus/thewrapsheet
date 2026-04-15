@@ -1,7 +1,7 @@
 import * as Sentry from '@sentry/nuxt'
 
 Sentry.init({
-  dsn: 'https://82a3fe52ee3ae0aa28671bc79c5492f4@o330433.ingest.us.sentry.io/4511220825391104',
+  dsn: process.env.NUXT_PUBLIC_SENTRY_DSN,
   tracesSampleRate: 1.0,
   replaysSessionSampleRate: 0.1,
   replaysOnErrorSampleRate: 1.0,
