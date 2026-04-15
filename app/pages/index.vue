@@ -2,6 +2,7 @@
 definePageMeta({ layout: 'default' })
 
 const { data: contacts, refresh } = await useFetch('/api/contacts')
+const { data: birthdays } = await useFetch('/api/contacts/birthdays')
 const filter = ref<'active' | 'archived'>('active')
 
 const filtered = computed(() =>
@@ -54,6 +55,29 @@ watch(filter, () => refresh())
         </div>
         <NuxtLink to="/contacts/new" class="btn btn-primary">
           + Add Contact
+        </NuxtLink>
+      </div>
+    </div>
+
+    <div v-if="birthdays?.length" class="birthday-section">
+      <h2 class="birthday-title">🎂 Upcoming Birthdays</h2>
+      <div class="birthday-list">
+        <NuxtLink
+          v-for="b in birthdays"
+          :key="b.id"
+          :to="`/contacts/${b.id}`"
+          class="birthday-card"
+          :class="{ today: b.isToday }"
+        >
+          <div class="birthday-name">
+            {{ b.firstName }}{{ b.lastName ? ` ${b.lastName}` : '' }}
+          </div>
+          <div class="birthday-meta">
+            <span class="birthday-age">Turning {{ b.turningAge }}</span>
+            <span class="birthday-days">
+              {{ b.isToday ? '🎉 Today!' : `in ${b.daysUntil} day${b.daysUntil !== 1 ? 's' : ''}` }}
+            </span>
+          </div>
         </NuxtLink>
       </div>
     </div>
@@ -168,6 +192,69 @@ watch(filter, () => refresh())
   color: var(--text);
 }
 
+.birthday-section {
+  margin-bottom: 2rem;
+}
+
+.birthday-title {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  color: var(--yellow);
+  margin-bottom: 0.75rem;
+}
+
+.birthday-list {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.birthday-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem 1rem;
+  min-width: 160px;
+  transition: all 0.15s;
+}
+
+.birthday-card:hover {
+  border-color: var(--border-light);
+  background: var(--bg-elevated);
+}
+
+.birthday-card.today {
+  border-color: var(--yellow);
+  background: var(--yellow-dim);
+}
+
+.birthday-name {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--text);
+}
+
+.birthday-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.birthday-age {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.birthday-days {
+  font-size: 0.75rem;
+  color: var(--yellow);
+  font-weight: 500;
+}
+
 .empty-state {
   text-align: center;
   padding: 5rem 2rem;
@@ -257,17 +344,17 @@ watch(filter, () => refresh())
   white-space: nowrap;
 }
 
+.contact-age {
+  font-size: 0.82rem;
+  color: var(--text-dim);
+  margin-top: 0.15rem;
+}
+
 .contact-socials {
   display: flex;
   gap: 0.4rem;
   margin-top: 0.35rem;
   flex-wrap: wrap;
-}
-
-.contact-age {
-  font-size: 0.82rem;
-  color: var(--text-dim);
-  margin-top: 0.15rem;
 }
 
 .social-pill {
