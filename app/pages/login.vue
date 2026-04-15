@@ -17,22 +17,51 @@ async function signIn() {
   if (err) error.value = err.message ?? 'Sign in failed'
   loading.value = false
 }
+
+definePageMeta({ layout: false })
 </script>
 
 <template>
   <div class="login-page">
     <div class="login-card">
-      <h1>The Wrap Sheet</h1>
-      <p class="subtitle">Sign in to continue</p>
-      <div v-if="error" class="error">{{ error }}</div>
-      <div class="form">
-        <input v-model="email" type="email" placeholder="Email" autocomplete="email" />
-        <input v-model="password" type="password" placeholder="Password" autocomplete="current-password" />
-        <button :disabled="loading" @click="signIn">
+      <div class="login-logo">🌮</div>
+      <h1 class="login-title">The Wrap Sheet</h1>
+      <p class="login-sub">Your personal black book</p>
+
+      <div v-if="error" class="error-box">{{ error }}</div>
+
+      <div class="login-form">
+        <div class="field">
+          <label>Email</label>
+          <input
+            v-model="email"
+            type="email"
+            placeholder="you@example.com"
+            autocomplete="email"
+            @keyup.enter="signIn"
+          />
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <input
+            v-model="password"
+            type="password"
+            placeholder="••••••••"
+            autocomplete="current-password"
+            @keyup.enter="signIn"
+          />
+        </div>
+        <button class="login-btn" :disabled="loading" @click="signIn">
           {{ loading ? 'Signing in...' : 'Sign in' }}
         </button>
       </div>
+
+      <div class="login-footer">
+        🌭 &nbsp; Keep it between us
+      </div>
     </div>
+
+    <div class="bg-text">THE WRAP SHEET</div>
   </div>
 </template>
 
@@ -42,49 +71,136 @@ async function signIn() {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #0f0f0f;
+  background: var(--bg);
+  position: relative;
+  overflow: hidden;
 }
+
+.bg-text {
+  position: absolute;
+  font-family: var(--font-display);
+  font-size: clamp(4rem, 15vw, 14rem);
+  color: rgba(255, 255, 255, 0.02);
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  user-select: none;
+  pointer-events: none;
+  bottom: -2rem;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
 .login-card {
-  background: #1a1a1a;
-  border: 1px solid #2a2a2a;
-  border-radius: 12px;
-  padding: 2rem;
+  position: relative;
+  z-index: 1;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 2.5rem 2rem;
   width: 100%;
-  max-width: 380px;
+  max-width: 400px;
+  box-shadow: 0 0 60px rgba(234, 179, 8, 0.06);
 }
-h1 { color: #fff; margin: 0 0 0.25rem; font-size: 1.5rem; }
-.subtitle { color: #888; margin: 0 0 1.5rem; font-size: 0.9rem; }
-.error {
-  background: #2a1515;
-  border: 1px solid #5a2020;
-  color: #ff6b6b;
-  padding: 0.75rem;
-  border-radius: 8px;
-  margin-bottom: 1rem;
+
+.login-logo {
+  font-size: 3rem;
+  text-align: center;
+  margin-bottom: 0.5rem;
+  filter: drop-shadow(0 0 12px rgba(234, 179, 8, 0.4));
+}
+
+.login-title {
+  font-family: var(--font-display);
+  font-size: 2.25rem;
+  color: var(--yellow);
+  text-align: center;
+  letter-spacing: 0.02em;
+  margin-bottom: 0.25rem;
+}
+
+.login-sub {
+  text-align: center;
+  color: var(--text-dim);
+  font-size: 0.875rem;
+  margin-bottom: 2rem;
+}
+
+.error-box {
+  background: var(--red-dim);
+  border: 1px solid var(--red);
+  color: #fca5a5;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-sm);
+  margin-bottom: 1.25rem;
   font-size: 0.875rem;
 }
-.form { display: flex; flex-direction: column; gap: 0.75rem; }
-input {
-  background: #0f0f0f;
-  border: 1px solid #2a2a2a;
-  border-radius: 8px;
-  color: #fff;
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.field label {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.field input {
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
   padding: 0.75rem 1rem;
   font-size: 1rem;
   outline: none;
-  transition: border-color 0.2s;
+  transition: border-color 0.15s;
+  width: 100%;
 }
-input:focus { border-color: #555; }
-button {
-  background: #fff;
-  color: #000;
+
+.field input:focus {
+  border-color: var(--yellow);
+}
+
+.login-btn {
+  margin-top: 0.5rem;
+  background: var(--red);
+  color: #fff;
   border: none;
-  border-radius: 8px;
-  padding: 0.75rem;
+  border-radius: var(--radius-sm);
+  padding: 0.85rem;
   font-size: 1rem;
   font-weight: 600;
+  font-family: var(--font-body);
   cursor: pointer;
-  transition: opacity 0.2s;
+  transition: all 0.15s;
+  letter-spacing: 0.02em;
 }
-button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.login-btn:hover:not(:disabled) {
+  background: var(--red-hover);
+  transform: translateY(-1px);
+}
+
+.login-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.login-footer {
+  text-align: center;
+  margin-top: 1.75rem;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  font-style: italic;
+}
 </style>
