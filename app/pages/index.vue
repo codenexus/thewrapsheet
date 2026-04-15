@@ -1,13 +1,24 @@
 <script setup lang="ts">
+import Fuse from 'fuse.js'
+
 definePageMeta({ layout: 'default' })
 
 const { data: contacts, refresh } = await useFetch('/api/contacts')
-const { data: birthdays } = await useFetch('/api/contacts/birthdays')
+const { data: birthdays } = await useFetch('/api/contacts/birthdays', { server: false })
 const filter = ref<'active' | 'archived'>('active')
+const search = ref('')
 
-const filtered = computed(() =>
-  contacts.value?.filter(c => c.status === filter.value) ?? []
-)
+const filtered = computed(() => {
+  let result = contacts.value?.filter(c => c.status === filter.value) ?? []
+  if (!search.value.trim()) return result
+
+  const fuse = new Fuse(result, {
+    keys: ['firstName', 'lastName', 'alias', 'phone', 'email'],
+    threshold: 0.3,
+  })
+
+  return fuse.search(search.value).map(r => r.item)
+})
 
 function formatPhone(phone: string | null) {
   if (!phone) return ''
@@ -57,6 +68,15 @@ watch(filter, () => refresh())
           + Add Contact
         </NuxtLink>
       </div>
+    </div>
+
+    <div class="search-bar">
+      <input
+        v-model="search"
+        type="search"
+        placeholder="Search contacts..."
+        class="search-input"
+      />
     </div>
 
     <div v-if="birthdays?.length" class="birthday-section">
@@ -190,6 +210,27 @@ watch(filter, () => refresh())
 .filter-tab.active {
   background: var(--bg-elevated);
   color: var(--text);
+}
+
+.search-bar {
+  margin-bottom: 1.5rem;
+}
+
+.search-input {
+  width: 100%;
+  max-width: 400px;
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  padding: 0.65rem 1rem;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.search-input:focus {
+  border-color: var(--yellow);
 }
 
 .birthday-section {
