@@ -3,6 +3,7 @@ import { authClient } from '../lib/auth-client'
 
 const router = useRouter()
 const menuOpen = ref(false)
+const { data: me } = await useFetch('/api/auth/me', { server: false })
 
 async function signOut() {
   await authClient.signOut()
@@ -27,6 +28,7 @@ function closeMenu() {
           <NuxtLink to="/" class="nav-link">Contacts</NuxtLink>
           <NuxtLink to="/review" class="nav-link">Review Queue</NuxtLink>
           <NuxtLink to="/settings" class="nav-link">Settings</NuxtLink>
+          <NuxtLink v-if="me?.isAdmin" to="/admin" class="nav-link">Admin</NuxtLink>
         </nav>
         <button class="btn btn-ghost signout-btn desktop-nav" @click="signOut">
           Sign out
@@ -45,6 +47,7 @@ function closeMenu() {
         <NuxtLink to="/" class="mobile-link" @click="closeMenu">Contacts</NuxtLink>
         <NuxtLink to="/review" class="mobile-link" @click="closeMenu">Review Queue</NuxtLink>
         <NuxtLink to="/settings" class="mobile-link" @click="closeMenu">Settings</NuxtLink>
+        <NuxtLink v-if="me?.isAdmin" to="/admin" class="mobile-link" @click="closeMenu">Admin</NuxtLink>
         <button class="mobile-link signout-mobile" @click="signOut">Sign out</button>
       </div>
     </header>
