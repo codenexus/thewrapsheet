@@ -4,6 +4,12 @@ const client = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
 })
 
+export interface UserFlag {
+  id: string
+  emoji: string
+  label: string
+}
+
 export interface ParsedContact {
   intent: 'create' | 'update' | 'ambiguous'
   confidence: 'high' | 'low'
@@ -13,16 +19,23 @@ export interface ParsedContact {
   alias?: string
   phone?: string
   email?: string
-  hotdog?: boolean
-  taco?: boolean
   notes?: string
+  matchedFlagLabels?: string[]
   socialHandles?: { platform: string; handle: string }[]
 }
 
 export async function parseEmailToContact(
   body: string,
-  subject: string
+  subject: string,
+  userFlags: UserFlag[] = []
 ): Promise<ParsedContact> {
+  const flagsSection = userFlags.length
+    ? `The user tracks these custom flags for contacts:
+${userFlags.map(f => `- "${f.label}" (${f.emoji})`).join('\n')}
+
+If the email content suggests any of these flags apply to this contact, include the matching label(s) in "matchedFlagLabels". Only include flags that are clearly indicated by the email content.`
+    : 'The user has no custom flags configured.'
+
   const prompt = `You are parsing an email to extract contact information for a personal contact management app.
 
 The app tracks these fields:
@@ -31,10 +44,10 @@ The app tracks these fields:
 - alias/nickname (optional)
 - phone (optional)
 - email (optional)
-- hotdog: boolean - did the user give this person a hotdog? (sexual euphemism, interpret liberally)
-- taco: boolean - did the user receive a taco from this person? (sexual euphemism, interpret liberally)
 - notes: freeform text
 - socialHandles: array of { platform, handle }
+
+${flagsSection}
 
 Determine the intent:
 - "create": adding a new contact
@@ -53,9 +66,8 @@ Return ONLY a JSON object with no markdown, no explanation:
   "alias": "string or null",
   "phone": "string or null",
   "email": "string or null",
-  "hotdog": true | false | null,
-  "taco": true | false | null,
   "notes": "string or null",
+  "matchedFlagLabels": [] or ["label1", "label2"],
   "socialHandles": [] or [{ "platform": "string", "handle": "string" }]
 }
 

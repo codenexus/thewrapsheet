@@ -1,5 +1,5 @@
 import { parseEmailToContact } from '../../services/emailParser'
-import { findMatchingContact, createContact, updateContact, addSocialHandle } from '../../services/contacts'
+import { findMatchingContact, createContact, updateContact, addSocialHandle, getUserFlags, setContactFlag } from '../../services/contacts'
 import { db } from '../../utils/db'
 import { user } from '../../../db/schema'
 import { eq } from 'drizzle-orm'
@@ -28,7 +28,10 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 404, message: 'No user found' })
   }
 
-  const parsed = await parseEmailToContact(emailBody, subject ?? '')
+  // Fetch user's flags to pass to the parser
+  const userFlags = await getUserFlags(targetUser.id)
+
+  const parsed = await parseEmailToContact(emailBody, subject ?? '', userFlags)
 
   if (!parsed.firstName) {
     return { success: false, reason: 'Could not extract contact name' }
@@ -50,8 +53,6 @@ export default defineEventHandler(async (event) => {
     alias: parsed.alias ?? undefined,
     phone: parsed.phone ?? undefined,
     email: parsed.email ?? undefined,
-    hotdog: parsed.hotdog ?? false,
-    taco: parsed.taco ?? false,
     notes: parsed.notes ?? undefined,
     needsReview,
   }
@@ -68,12 +69,24 @@ export default defineEventHandler(async (event) => {
     contactId = existing.id
   } else {
     const newContact = await createContact(targetUser.id, contactData)
-    contactId = newContact.id
+    contactId = newContact!.id
   }
 
   if (parsed.socialHandles?.length) {
     await Promise.all(
       parsed.socialHandles.map(h => addSocialHandle(contactId, h))
+    )
+  }
+
+  // Set matched flags
+  if (parsed.matchedFlagLabels?.length && userFlags.length) {
+    const matchedFlags = userFlags.filter(f =>
+      parsed.matchedFlagLabels!.some(
+        label => label.toLowerCase() === f.label.toLowerCase()
+      )
+    )
+    await Promise.all(
+      matchedFlags.map(f => setContactFlag(contactId, f.id))
     )
   }
 
