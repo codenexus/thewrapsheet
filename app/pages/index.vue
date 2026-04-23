@@ -7,6 +7,8 @@ const { data: contacts, refresh } = await useFetch('/api/contacts')
 const { data: birthdays } = await useFetch('/api/contacts/birthdays', { server: false })
 const filter = ref<'active' | 'archived'>('active')
 const search = ref('')
+const currentLetter = ref('')
+const contactsContainer = ref<HTMLElement | null>(null)
 
 const filtered = computed(() => {
   let result = contacts.value?.filter(c => c.status === filter.value) ?? []
@@ -18,6 +20,17 @@ const filtered = computed(() => {
   })
 
   return fuse.search(search.value).map(r => r.item)
+})
+
+const groupedContacts = computed(() => {
+  if (search.value.trim()) return null
+  const groups: Record<string, typeof filtered.value> = {}
+  for (const contact of filtered.value) {
+    const letter = contact.firstName?.[0]?.toUpperCase() ?? '#'
+    if (!groups[letter]) groups[letter] = []
+    groups[letter].push(contact)
+  }
+  return Object.entries(groups).sort(([a], [b]) => a.localeCompare(b))
 })
 
 function formatPhone(phone: string | null) {
@@ -40,6 +53,27 @@ function calculateAge(birthday: string | null) {
   }
   return age
 }
+
+function onScroll() {
+  if (!contactsContainer.value) return
+  const headers = contactsContainer.value.querySelectorAll('.letter-header')
+  let current = ''
+  for (const header of headers) {
+    const rect = header.getBoundingClientRect()
+    if (rect.top <= 80) {
+      current = header.textContent?.trim() ?? ''
+    }
+  }
+  currentLetter.value = current
+}
+
+onMounted(() => {
+  window.addEventListener('scroll', onScroll, { passive: true })
+})
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', onScroll)
+})
 
 watch(filter, () => refresh())
 </script>
@@ -111,49 +145,104 @@ watch(filter, () => refresh())
       </NuxtLink>
     </div>
 
-    <div v-else class="contact-grid">
-      <NuxtLink
-        v-for="contact in filtered"
-        :key="contact.id"
-        :to="`/contacts/${contact.id}`"
-        class="contact-card"
-      >
-        <div class="contact-avatar">
-          <img v-if="contact.mainPhotoUrl" :src="contact.mainPhotoUrl" :alt="contact.firstName" />
-          <span v-else class="avatar-initials">
-            {{ contact.firstName[0] }}{{ contact.lastName?.[0] ?? '' }}
-          </span>
-        </div>
-        <div class="contact-info">
-          <div class="contact-name">
-            {{ contact.firstName }}{{ contact.lastName ? ` ${contact.lastName}` : '' }}
-            <span v-if="contact.alias" class="contact-alias">"{{ contact.alias }}"</span>
+    <div v-else ref="contactsContainer" class="contacts-wrapper">
+      <!-- Floating letter indicator -->
+      <div v-if="currentLetter && !search" class="floating-letter">
+        {{ currentLetter }}
+      </div>
+
+      <!-- Search results — flat grid -->
+      <div v-if="search" class="contact-grid">
+        <NuxtLink
+          v-for="contact in filtered"
+          :key="contact.id"
+          :to="`/contacts/${contact.id}`"
+          class="contact-card"
+        >
+          <div class="contact-avatar">
+            <img v-if="contact.mainPhotoUrl" :src="contact.mainPhotoUrl" :alt="contact.firstName" />
+            <span v-else class="avatar-initials">
+              {{ contact.firstName[0] }}{{ contact.lastName?.[0] ?? '' }}
+            </span>
           </div>
-          <div v-if="contact.phone || contact.email" class="contact-detail">
-            <span v-if="contact.phone">{{ formatPhone(contact.phone) }}</span>
-            <span v-else-if="contact.email">{{ contact.email }}</span>
+          <div class="contact-info">
+            <div class="contact-name">
+              {{ contact.firstName }}{{ contact.lastName ? ` ${contact.lastName}` : '' }}
+              <span v-if="contact.alias" class="contact-alias">"{{ contact.alias }}"</span>
+            </div>
+            <div v-if="contact.phone || contact.email" class="contact-detail">
+              <span v-if="contact.phone">{{ formatPhone(contact.phone) }}</span>
+              <span v-else-if="contact.email">{{ contact.email }}</span>
+            </div>
+            <div v-if="contact.birthday" class="contact-age">
+              {{ calculateAge(contact.birthday) }} years old
+            </div>
+            <div v-if="contact.socialHandles?.length" class="contact-socials">
+              <span v-for="handle in contact.socialHandles.slice(0, 2)" :key="handle.id" class="social-pill">
+                {{ handle.platform }}
+              </span>
+            </div>
           </div>
-          <div v-if="contact.birthday" class="contact-age">
-            {{ calculateAge(contact.birthday) }} years old
-          </div>
-          <div v-if="contact.socialHandles?.length" class="contact-socials">
+          <div class="contact-indicators">
             <span
-              v-for="handle in contact.socialHandles.slice(0, 2)"
-              :key="handle.id"
-              class="social-pill"
-            >{{ handle.platform }}</span>
+              v-for="flag in [...(contact.contactFlags ?? [])].sort((a, b) => a.flag.sortOrder - b.flag.sortOrder)"
+              :key="flag.id"
+              class="indicator active"
+              :title="flag.flag.label"
+            >{{ flag.flag.emoji }}</span>
+            <span v-if="contact.needsReview" class="indicator active review" title="Needs Review">⚠️</span>
+          </div>
+        </NuxtLink>
+      </div>
+
+      <!-- Grouped by letter -->
+      <div v-else>
+        <div v-for="[letter, group] in groupedContacts" :key="letter" class="letter-group">
+          <div class="letter-header">{{ letter }}</div>
+          <div class="contact-grid">
+            <NuxtLink
+              v-for="contact in group"
+              :key="contact.id"
+              :to="`/contacts/${contact.id}`"
+              class="contact-card"
+            >
+              <div class="contact-avatar">
+                <img v-if="contact.mainPhotoUrl" :src="contact.mainPhotoUrl" :alt="contact.firstName" />
+                <span v-else class="avatar-initials">
+                  {{ contact.firstName[0] }}{{ contact.lastName?.[0] ?? '' }}
+                </span>
+              </div>
+              <div class="contact-info">
+                <div class="contact-name">
+                  {{ contact.firstName }}{{ contact.lastName ? ` ${contact.lastName}` : '' }}
+                  <span v-if="contact.alias" class="contact-alias">"{{ contact.alias }}"</span>
+                </div>
+                <div v-if="contact.phone || contact.email" class="contact-detail">
+                  <span v-if="contact.phone">{{ formatPhone(contact.phone) }}</span>
+                  <span v-else-if="contact.email">{{ contact.email }}</span>
+                </div>
+                <div v-if="contact.birthday" class="contact-age">
+                  {{ calculateAge(contact.birthday) }} years old
+                </div>
+                <div v-if="contact.socialHandles?.length" class="contact-socials">
+                  <span v-for="handle in contact.socialHandles.slice(0, 2)" :key="handle.id" class="social-pill">
+                    {{ handle.platform }}
+                  </span>
+                </div>
+              </div>
+              <div class="contact-indicators">
+                <span
+                  v-for="flag in [...(contact.contactFlags ?? [])].sort((a, b) => a.flag.sortOrder - b.flag.sortOrder)"
+                  :key="flag.id"
+                  class="indicator active"
+                  :title="flag.flag.label"
+                >{{ flag.flag.emoji }}</span>
+                <span v-if="contact.needsReview" class="indicator active review" title="Needs Review">⚠️</span>
+              </div>
+            </NuxtLink>
           </div>
         </div>
-        <div class="contact-indicators">
-          <span
-            v-for="flag in [...(contact.contactFlags ?? [])].sort((a, b) => a.flag.sortOrder - b.flag.sortOrder)"
-            :key="flag.id"
-            class="indicator active"
-            :title="flag.flag.label"
-          >{{ flag.flag.emoji }}</span>
-          <span v-if="contact.needsReview" class="indicator active review" title="Needs Review">⚠️</span>
-        </div>
-      </NuxtLink>
+      </div>
     </div>
   </div>
 </template>
@@ -305,6 +394,39 @@ watch(filter, () => refresh())
 .empty-emoji { font-size: 3rem; margin-bottom: 1rem; }
 .empty-title { font-size: 1.25rem; color: var(--text); font-weight: 500; }
 .empty-sub { font-size: 0.9rem; margin-top: 0.5rem; }
+
+.contacts-wrapper {
+  position: relative;
+}
+
+.floating-letter {
+  position: fixed;
+  left: 1.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: var(--font-display);
+  font-size: 3rem;
+  color: var(--yellow);
+  opacity: 0.15;
+  pointer-events: none;
+  z-index: 50;
+  line-height: 1;
+  user-select: none;
+}
+
+.letter-group {
+  margin-bottom: 1.5rem;
+}
+
+.letter-header {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  color: var(--yellow);
+  padding: 0.4rem 0;
+  margin-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border);
+  letter-spacing: 0.05em;
+}
 
 .contact-grid {
   display: grid;
