@@ -60,7 +60,7 @@ function onScroll() {
   let current = ''
   for (const header of headers) {
     const rect = header.getBoundingClientRect()
-    if (rect.top <= 80) {
+    if (rect.top <= window.innerHeight / 2) {
       current = header.textContent?.trim() ?? ''
     }
   }
@@ -412,6 +412,13 @@ watch(filter, () => refresh())
   z-index: 50;
   line-height: 1;
   user-select: none;
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .floating-letter {
+    display: block;
+  }
 }
 
 .letter-group {
