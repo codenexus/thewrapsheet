@@ -2,10 +2,15 @@
 import { authClient } from '../lib/auth-client'
 
 const router = useRouter()
+const menuOpen = ref(false)
 
 async function signOut() {
   await authClient.signOut()
   router.push('/login')
+}
+
+function closeMenu() {
+  menuOpen.value = false
 }
 </script>
 
@@ -13,17 +18,34 @@ async function signOut() {
   <div class="app-shell">
     <header class="topnav">
       <div class="topnav-inner">
-        <NuxtLink to="/" class="wordmark">
+        <NuxtLink to="/" class="wordmark" @click="closeMenu">
           🌯 The Wrap Sheet
         </NuxtLink>
-        <nav class="nav-links">
+
+        <!-- Desktop nav -->
+        <nav class="nav-links desktop-nav">
           <NuxtLink to="/" class="nav-link">Contacts</NuxtLink>
           <NuxtLink to="/review" class="nav-link">Review Queue</NuxtLink>
           <NuxtLink to="/settings" class="nav-link">Settings</NuxtLink>
         </nav>
-        <button class="btn btn-ghost signout-btn" @click="signOut">
+        <button class="btn btn-ghost signout-btn desktop-nav" @click="signOut">
           Sign out
         </button>
+
+        <!-- Mobile hamburger -->
+        <button class="hamburger mobile-nav" @click="menuOpen = !menuOpen">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+
+      <!-- Mobile menu -->
+      <div v-if="menuOpen" class="mobile-menu">
+        <NuxtLink to="/" class="mobile-link" @click="closeMenu">Contacts</NuxtLink>
+        <NuxtLink to="/review" class="mobile-link" @click="closeMenu">Review Queue</NuxtLink>
+        <NuxtLink to="/settings" class="mobile-link" @click="closeMenu">Settings</NuxtLink>
+        <button class="mobile-link signout-mobile" @click="signOut">Sign out</button>
       </div>
     </header>
     <main>
@@ -87,5 +109,74 @@ async function signOut() {
 .signout-btn {
   margin-left: auto;
   font-size: 0.875rem;
+}
+
+.hamburger {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  margin-left: auto;
+}
+
+.hamburger span {
+  display: block;
+  width: 24px;
+  height: 2px;
+  background: var(--text);
+  border-radius: 2px;
+  transition: all 0.15s;
+}
+
+.mobile-menu {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-card);
+  border-top: 1px solid var(--border);
+  padding: 0.5rem 0;
+}
+
+.mobile-link {
+  display: block;
+  padding: 0.85rem 1.5rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  font-size: 1rem;
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+  width: 100%;
+  transition: all 0.15s;
+  font-family: var(--font-body);
+}
+
+.mobile-link:hover,
+.mobile-link.router-link-active {
+  color: var(--text);
+  background: var(--bg-elevated);
+}
+
+.signout-mobile {
+  color: var(--red) !important;
+  margin-top: 0.25rem;
+  border-top: 1px solid var(--border);
+}
+
+@media (max-width: 640px) {
+  .desktop-nav {
+    display: none;
+  }
+
+  .hamburger {
+    display: flex;
+  }
+
+  .topnav-inner {
+    gap: 1rem;
+  }
 }
 </style>
