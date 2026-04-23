@@ -8,7 +8,9 @@ const { data: birthdays } = await useFetch('/api/contacts/birthdays', { server: 
 const filter = ref<'active' | 'archived'>('active')
 const search = ref('')
 const currentLetter = ref('')
+const letterVisible = ref(false)
 const contactsContainer = ref<HTMLElement | null>(null)
+let fadeTimer: ReturnType<typeof setTimeout> | null = null
 
 const filtered = computed(() => {
   let result = contacts.value?.filter(c => c.status === filter.value) ?? []
@@ -65,6 +67,12 @@ function onScroll() {
     }
   }
   currentLetter.value = current
+  letterVisible.value = true
+
+  if (fadeTimer) clearTimeout(fadeTimer)
+  fadeTimer = setTimeout(() => {
+    letterVisible.value = false
+  }, 1500)
 }
 
 onMounted(() => {
@@ -73,6 +81,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('scroll', onScroll)
+  if (fadeTimer) clearTimeout(fadeTimer)
 })
 
 watch(filter, () => refresh())
@@ -146,12 +155,10 @@ watch(filter, () => refresh())
     </div>
 
     <div v-else ref="contactsContainer" class="contacts-wrapper">
-      <!-- Floating letter indicator -->
-      <div v-if="currentLetter && !search" class="floating-letter">
+      <div v-if="currentLetter && !search" class="floating-letter" :class="{ visible: letterVisible }">
         {{ currentLetter }}
       </div>
 
-      <!-- Search results — flat grid -->
       <div v-if="search" class="contact-grid">
         <NuxtLink
           v-for="contact in filtered"
@@ -195,7 +202,6 @@ watch(filter, () => refresh())
         </NuxtLink>
       </div>
 
-      <!-- Grouped by letter -->
       <div v-else>
         <div v-for="[letter, group] in groupedContacts" :key="letter" class="letter-group">
           <div class="letter-header">{{ letter }}</div>
@@ -407,12 +413,17 @@ watch(filter, () => refresh())
   font-family: var(--font-display);
   font-size: 3rem;
   color: var(--yellow);
-  opacity: 0.15;
+  opacity: 0;
   pointer-events: none;
   z-index: 50;
   line-height: 1;
   user-select: none;
   display: none;
+  transition: opacity 0.5s ease;
+}
+
+.floating-letter.visible {
+  opacity: 0.15;
 }
 
 @media (max-width: 640px) {
