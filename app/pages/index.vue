@@ -442,7 +442,6 @@ watch(filter, () => refresh())
   color: var(--yellow);
   padding: 0.4rem 0;
   margin-bottom: 0.75rem;
-  border-bottom: 1px solid var(--border);
   letter-spacing: 0.05em;
 }
 
