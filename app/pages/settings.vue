@@ -121,50 +121,6 @@ async function changePassword() {
     </div>
 
     <div class="settings-section">
-      <h2 class="section-title">Account</h2>
-      <p class="section-desc">Update your name and email address.</p>
-      <div v-if="accountError" class="error-msg">{{ accountError }}</div>
-      <div class="form-group">
-        <label>Name</label>
-        <input v-model="accountForm.name" placeholder="Your name" />
-      </div>
-      <div class="form-group" style="margin-top: 0.75rem">
-        <label>Email</label>
-        <input v-model="accountForm.email" type="email" placeholder="your@email.com" />
-      </div>
-      <div class="section-actions">
-        <button class="btn btn-primary" :disabled="accountSaving" @click="saveAccount">
-          {{ accountSaving ? 'Saving...' : 'Save Changes' }}
-        </button>
-        <span v-if="accountSuccess" class="success-inline">✓ Saved</span>
-      </div>
-    </div>
-
-    <div class="settings-section">
-      <h2 class="section-title">Change Password</h2>
-      <p class="section-desc">Update your password.</p>
-      <div v-if="passwordError" class="error-msg">{{ passwordError }}</div>
-      <div class="form-group">
-        <label>Current Password</label>
-        <input v-model="passwordForm.currentPassword" type="password" placeholder="Current password" />
-      </div>
-      <div class="form-group" style="margin-top: 0.75rem">
-        <label>New Password</label>
-        <input v-model="passwordForm.newPassword" type="password" placeholder="New password" />
-      </div>
-      <div class="form-group" style="margin-top: 0.75rem">
-        <label>Confirm New Password</label>
-        <input v-model="passwordForm.confirmPassword" type="password" placeholder="Confirm new password" />
-      </div>
-      <div class="section-actions">
-        <button class="btn btn-primary" :disabled="passwordSaving" @click="changePassword">
-          {{ passwordSaving ? 'Saving...' : 'Change Password' }}
-        </button>
-        <span v-if="passwordSuccess" class="success-inline">✓ Password changed</span>
-      </div>
-    </div>
-
-    <div class="settings-section">
       <h2 class="section-title">My Flags</h2>
       <p class="section-desc">Define what you want to track for your contacts. These flags appear on every contact card.</p>
 
@@ -205,6 +161,55 @@ async function changePassword() {
       </div>
       <div v-if="flagError" class="error-msg">{{ flagError }}</div>
     </div>
+
+    <div class="settings-section">
+      <h2 class="section-title">Account</h2>
+      <p class="section-desc">Update your name and email address.</p>
+      <div v-if="accountError" class="error-msg">{{ accountError }}</div>
+      <div class="account-grid">
+        <div class="form-group">
+          <label>Name</label>
+          <input v-model="accountForm.name" placeholder="Your name" />
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input v-model="accountForm.email" type="email" placeholder="your@email.com" />
+          <p class="field-warning">⚠️ Make sure this is correct — you'll need it to log in next time.</p>
+        </div>
+      </div>
+      <div class="section-actions">
+        <button class="btn btn-primary" :disabled="accountSaving" @click="saveAccount">
+          {{ accountSaving ? 'Saving...' : 'Save Changes' }}
+        </button>
+        <span v-if="accountSuccess" class="success-inline">✓ Saved</span>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <h2 class="section-title">Change Password</h2>
+      <p class="section-desc">Update your password.</p>
+      <div v-if="passwordError" class="error-msg">{{ passwordError }}</div>
+      <div class="form-group">
+        <label>Current Password</label>
+        <input v-model="passwordForm.currentPassword" type="password" placeholder="Current password" />
+      </div>
+      <div class="account-grid" style="margin-top: 1rem">
+        <div class="form-group">
+          <label>New Password</label>
+          <input v-model="passwordForm.newPassword" type="password" placeholder="New password" />
+        </div>
+        <div class="form-group">
+          <label>Confirm New Password</label>
+          <input v-model="passwordForm.confirmPassword" type="password" placeholder="Confirm new password" />
+        </div>
+      </div>
+      <div class="section-actions">
+        <button class="btn btn-primary" :disabled="passwordSaving" @click="changePassword">
+          {{ passwordSaving ? 'Saving...' : 'Change Password' }}
+        </button>
+        <span v-if="passwordSuccess" class="success-inline">✓ Password changed</span>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -224,7 +229,6 @@ async function changePassword() {
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 1.5rem;
-  max-width: 600px;
   margin-bottom: 1.5rem;
 }
 
@@ -294,5 +298,22 @@ async function changePassword() {
   font-size: 0.875rem;
   color: #fca5a5;
   margin-bottom: 0.75rem;
+}
+
+.field-warning {
+  font-size: 0.75rem;
+  color: var(--text-dim);
+  margin-top: 0.35rem;
+}
+
+.account-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+@media (max-width: 640px) {
+  .account-grid { grid-template-columns: 1fr; }
 }
 </style>
