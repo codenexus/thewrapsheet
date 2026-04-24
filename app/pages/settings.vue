@@ -2,11 +2,13 @@
 definePageMeta({ layout: 'default' })
 
 const { data: flags, refresh } = await useFetch('/api/flags')
+const { data: me, refresh: refreshMe } = await useFetch('/api/auth/me', { server: false })
 
+// Flags
 const newEmoji = ref('')
 const newLabel = ref('')
 const adding = ref(false)
-const error = ref('')
+const flagError = ref('')
 
 async function addFlag() {
   if (!newEmoji.value || !newLabel.value) return
@@ -20,7 +22,7 @@ async function addFlag() {
     newLabel.value = ''
     refresh()
   } catch (e: any) {
-    error.value = e.message
+    flagError.value = e.message
   } finally {
     adding.value = false
   }
@@ -39,12 +41,127 @@ async function updateFlag(id: string, emoji: string, label: string) {
   })
   refresh()
 }
+
+// Account
+const accountForm = reactive({
+  name: '',
+  email: '',
+})
+
+const passwordForm = reactive({
+  currentPassword: '',
+  newPassword: '',
+  confirmPassword: '',
+})
+
+const accountSaving = ref(false)
+const accountError = ref('')
+const accountSuccess = ref(false)
+const passwordSaving = ref(false)
+const passwordError = ref('')
+const passwordSuccess = ref(false)
+
+watch(me, (val) => {
+  if (val) {
+    accountForm.name = val.name ?? ''
+    accountForm.email = val.email ?? ''
+  }
+}, { immediate: true })
+
+async function saveAccount() {
+  accountSaving.value = true
+  accountError.value = ''
+  try {
+    await $fetch('/api/account/update', {
+      method: 'PATCH',
+      body: { name: accountForm.name, email: accountForm.email },
+    })
+    accountSuccess.value = true
+    setTimeout(() => accountSuccess.value = false, 3000)
+    refreshMe()
+  } catch (e: any) {
+    accountError.value = e.data?.message ?? 'Failed to save'
+  } finally {
+    accountSaving.value = false
+  }
+}
+
+async function changePassword() {
+  passwordError.value = ''
+  if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+    passwordError.value = 'Passwords do not match'
+    return
+  }
+  passwordSaving.value = true
+  try {
+    await $fetch('/api/account/password', {
+      method: 'POST',
+      body: {
+        currentPassword: passwordForm.currentPassword,
+        newPassword: passwordForm.newPassword,
+      },
+    })
+    passwordForm.currentPassword = ''
+    passwordForm.newPassword = ''
+    passwordForm.confirmPassword = ''
+    passwordSuccess.value = true
+    setTimeout(() => passwordSuccess.value = false, 3000)
+  } catch (e: any) {
+    passwordError.value = e.data?.message ?? 'Failed to change password'
+  } finally {
+    passwordSaving.value = false
+  }
+}
 </script>
 
 <template>
   <div class="page">
     <div class="page-header">
       <h1 class="page-title">Settings</h1>
+    </div>
+
+    <div class="settings-section">
+      <h2 class="section-title">Account</h2>
+      <p class="section-desc">Update your name and email address.</p>
+      <div v-if="accountError" class="error-msg">{{ accountError }}</div>
+      <div class="form-group">
+        <label>Name</label>
+        <input v-model="accountForm.name" placeholder="Your name" />
+      </div>
+      <div class="form-group" style="margin-top: 0.75rem">
+        <label>Email</label>
+        <input v-model="accountForm.email" type="email" placeholder="your@email.com" />
+      </div>
+      <div class="section-actions">
+        <button class="btn btn-primary" :disabled="accountSaving" @click="saveAccount">
+          {{ accountSaving ? 'Saving...' : 'Save Changes' }}
+        </button>
+        <span v-if="accountSuccess" class="success-inline">✓ Saved</span>
+      </div>
+    </div>
+
+    <div class="settings-section">
+      <h2 class="section-title">Change Password</h2>
+      <p class="section-desc">Update your password.</p>
+      <div v-if="passwordError" class="error-msg">{{ passwordError }}</div>
+      <div class="form-group">
+        <label>Current Password</label>
+        <input v-model="passwordForm.currentPassword" type="password" placeholder="Current password" />
+      </div>
+      <div class="form-group" style="margin-top: 0.75rem">
+        <label>New Password</label>
+        <input v-model="passwordForm.newPassword" type="password" placeholder="New password" />
+      </div>
+      <div class="form-group" style="margin-top: 0.75rem">
+        <label>Confirm New Password</label>
+        <input v-model="passwordForm.confirmPassword" type="password" placeholder="Confirm new password" />
+      </div>
+      <div class="section-actions">
+        <button class="btn btn-primary" :disabled="passwordSaving" @click="changePassword">
+          {{ passwordSaving ? 'Saving...' : 'Change Password' }}
+        </button>
+        <span v-if="passwordSuccess" class="success-inline">✓ Password changed</span>
+      </div>
     </div>
 
     <div class="settings-section">
@@ -86,7 +203,7 @@ async function updateFlag(id: string, emoji: string, label: string) {
           + Add
         </button>
       </div>
-      <div v-if="error" class="error-msg">{{ error }}</div>
+      <div v-if="flagError" class="error-msg">{{ flagError }}</div>
     </div>
   </div>
 </template>
@@ -108,6 +225,7 @@ async function updateFlag(id: string, emoji: string, label: string) {
   border-radius: var(--radius);
   padding: 1.5rem;
   max-width: 600px;
+  margin-bottom: 1.5rem;
 }
 
 .section-title {
@@ -121,6 +239,28 @@ async function updateFlag(id: string, emoji: string, label: string) {
   font-size: 0.875rem;
   color: var(--text-muted);
   margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.4rem;
+}
+
+.section-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.success-inline {
+  font-size: 0.875rem;
+  color: var(--yellow);
 }
 
 .flags-list {
@@ -153,6 +293,6 @@ async function updateFlag(id: string, emoji: string, label: string) {
 .error-msg {
   font-size: 0.875rem;
   color: #fca5a5;
-  margin-top: 0.5rem;
+  margin-bottom: 0.75rem;
 }
 </style>
