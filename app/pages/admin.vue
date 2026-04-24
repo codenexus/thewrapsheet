@@ -48,14 +48,6 @@ async function toggleAdmin(u: any) {
   refresh()
 }
 
-async function updateAlias(u: any, alias: string) {
-  await $fetch(`/api/admin/users/${u.id}`, {
-    method: 'PATCH',
-    body: { isAdmin: u.isAdmin, inboundAlias: alias, name: u.name },
-  })
-  refresh()
-}
-
 const resetUserId = ref<string | null>(null)
 const resetPassword = ref('')
 const resetting = ref(false)
@@ -251,7 +243,7 @@ async function resetUserPassword(id: string) {
   flex-wrap: wrap;
 }
 
-.user-info { flex: 1; min-width: 0; }
+.user-info { flex: 1; min-width: 200px; }
 
 .user-name {
   font-weight: 600;
@@ -260,6 +252,7 @@ async function resetUserPassword(id: string) {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
 .admin-badge {
@@ -276,12 +269,14 @@ async function resetUserPassword(id: string) {
   font-size: 0.85rem;
   color: var(--text-muted);
   margin-top: 0.2rem;
+  word-break: break-all;
 }
 
 .user-meta {
   display: flex;
   gap: 1rem;
   margin-top: 0.35rem;
+  flex-wrap: wrap;
 }
 
 .user-alias, .user-since {
@@ -291,6 +286,7 @@ async function resetUserPassword(id: string) {
 
 .user-actions {
   display: flex;
+  flex-direction: column;
   gap: 0.5rem;
   flex-shrink: 0;
 }
@@ -305,10 +301,11 @@ async function resetUserPassword(id: string) {
   margin-top: 0.75rem;
   padding-top: 0.75rem;
   border-top: 1px solid var(--border);
+  flex-wrap: wrap;
 }
 
 .reset-input {
   flex: 1;
-  max-width: 300px;
+  min-width: 150px;
 }
 </style>
