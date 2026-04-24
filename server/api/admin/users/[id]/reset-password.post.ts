@@ -9,6 +9,7 @@ export default defineEventHandler(async (event) => {
       newPassword: body.password,
       userId: id,
     },
+    headers: event.headers,
   })
 
   return { success: true }

@@ -24,6 +24,7 @@ export const user = pgTable('user', {
   image: text('image'),
   isAdmin: boolean('is_admin').notNull().default(false),
   inboundAlias: text('inbound_alias').unique(),
+  role: text('role').notNull().default('user'),
   createdAt: timestamp('created_at').notNull(),
   updatedAt: timestamp('updated_at').notNull(),
 })

@@ -5,6 +5,7 @@ definePageMeta({
 })
 
 const { data: users, refresh } = await useFetch('/api/admin/users')
+const { data: me } = await useFetch('/api/auth/me', { server: false })
 
 const showCreateForm = ref(false)
 const creating = ref(false)
@@ -41,6 +42,7 @@ async function createUser() {
 }
 
 async function toggleAdmin(u: any) {
+  if (u.id === me.value?.id) return
   await $fetch(`/api/admin/users/${u.id}`, {
     method: 'PATCH',
     body: { isAdmin: !u.isAdmin, inboundAlias: u.inboundAlias, name: u.name },
@@ -51,6 +53,7 @@ async function toggleAdmin(u: any) {
 const resetUserId = ref<string | null>(null)
 const resetPassword = ref('')
 const resetting = ref(false)
+const resetSuccess = ref(false)
 
 async function resetUserPassword(id: string) {
   resetting.value = true
@@ -61,6 +64,8 @@ async function resetUserPassword(id: string) {
     })
     resetUserId.value = null
     resetPassword.value = ''
+    resetSuccess.value = true
+    setTimeout(() => resetSuccess.value = false, 3000)
   } catch (e: any) {
     alert(e.data?.message ?? 'Failed to reset password')
   } finally {
@@ -130,10 +135,14 @@ async function resetUserPassword(id: string) {
           </div>
         </div>
         <div class="user-actions">
-          <button class="btn btn-secondary btn-sm" @click="toggleAdmin(u)">
+          <button 
+            class="btn btn-secondary btn-sm" 
+            :disabled="u.id === me?.id"
+            @click="toggleAdmin(u)"
+          >
             {{ u.isAdmin ? 'Remove Admin' : 'Make Admin' }}
           </button>
-          <button class="btn btn-ghost btn-sm" @click="resetUserId = u.id">
+          <button class="btn btn-secondary btn-sm" @click="resetUserId = u.id">
             Reset Password
           </button>
         </div>
@@ -146,6 +155,10 @@ async function resetUserPassword(id: string) {
           <button class="btn btn-ghost btn-sm" @click="resetUserId = null">Cancel</button>
         </div>
       </div>
+    </div>
+
+    <div v-if="resetSuccess" class="success-toast">
+      ✓ Password reset successfully
     </div>
   </div>
 </template>
@@ -307,5 +320,20 @@ async function resetUserPassword(id: string) {
 .reset-input {
   flex: 1;
   min-width: 150px;
+}
+
+.success-toast {
+  position: fixed;
+  top: 5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-card);
+  border: 1px solid var(--yellow);
+  color: var(--yellow);
+  padding: 0.75rem 1.25rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  z-index: 200;
+  white-space: nowrap;
 }
 </style>
