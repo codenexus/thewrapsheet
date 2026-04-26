@@ -8,6 +8,10 @@ export default defineEventHandler(async (event) => {
   const body = await readBody(event)
   const existing = await getUserFlags(session.user.id)
 
+  if (existing.length >= 12) {
+    throw createError({ statusCode: 400, message: 'Maximum of 12 flags allowed' })
+  }
+
   return createUserFlag(session.user.id, {
     emoji: body.emoji,
     label: body.label,

@@ -12,7 +12,12 @@ const flagError = ref('')
 
 async function addFlag() {
   if (!newEmoji.value || !newLabel.value) return
+  if ((flags.value?.length ?? 0) >= 12) {
+    flagError.value = 'Maximum of 12 flags allowed'
+    return
+  }
   adding.value = true
+  flagError.value = ''
   try {
     await $fetch('/api/flags', {
       method: 'POST',
@@ -155,9 +160,10 @@ async function changePassword() {
           placeholder="Flag label"
           @keyup.enter="addFlag"
         />
-        <button class="btn btn-primary" :disabled="adding || !newEmoji || !newLabel" @click="addFlag">
+        <button class="btn btn-primary" :disabled="adding || !newEmoji || !newLabel || (flags?.length ?? 0) >= 12" @click="addFlag">
           + Add
         </button>
+        <span class="flag-count">{{ flags?.length ?? 0 }} / 12</span>
       </div>
       <div v-if="flagError" class="error-msg">{{ flagError }}</div>
     </div>
@@ -311,6 +317,11 @@ async function changePassword() {
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
   margin-bottom: 0.5rem;
+}
+
+.flag-count {
+  font-size: 0.8rem;
+  color: var(--text-muted);
 }
 
 @media (max-width: 640px) {
