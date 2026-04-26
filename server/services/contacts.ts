@@ -1,7 +1,7 @@
 import { db } from '../utils/db'
-import { contacts, socialHandles, userFlags, contactFlags } from '../../db/schema'
+import { contacts, socialHandles, userFlags, contactFlags, dates } from '../../db/schema'
 import { eq, and, or, ilike } from 'drizzle-orm'
-import type { NewContact, NewSocialHandle } from '../../db/schema'
+import type { NewContact, NewSocialHandle, NewDate } from '../../db/schema'
 import { normalizePhone } from '../utils/phone'
 
 export async function getContacts(userId: string, status?: 'active' | 'archived') {
@@ -132,5 +132,26 @@ export async function setContactFlag(contactId: string, flagId: string) {
 export async function unsetContactFlag(contactId: string, flagId: string) {
   await db.delete(contactFlags).where(
     and(eq(contactFlags.contactId, contactId), eq(contactFlags.flagId, flagId))
+  )
+}
+
+export async function getDates(userId: string, contactId?: string) {
+  return db.query.dates.findMany({
+    where: contactId
+      ? and(eq(dates.userId, userId), eq(dates.contactId, contactId))
+      : eq(dates.userId, userId),
+    with: { contact: true },
+    orderBy: (dates, { desc }) => [desc(dates.date)],
+  })
+}
+
+export async function createDate(userId: string, data: Omit<NewDate, 'userId'>) {
+  const [date] = await db.insert(dates).values({ ...data, userId }).returning()
+  return date
+}
+
+export async function deleteDate(userId: string, dateId: string) {
+  await db.delete(dates).where(
+    and(eq(dates.userId, userId), eq(dates.id, dateId))
   )
 }

@@ -117,6 +117,16 @@ export const contactFlags = pgTable('contact_flags', {
   createdAt: timestamp('created_at').notNull().defaultNow(),
 })
 
+export const dates = pgTable('dates', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
+  contactId: uuid('contact_id').notNull().references(() => contacts.id, { onDelete: 'cascade' }),
+  date: date('date').notNull(),
+  title: text('title').notNull(),
+  notes: text('notes'),
+  createdAt: timestamp('created_at').notNull().defaultNow(),
+})
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export type User = typeof user.$inferSelect
@@ -128,6 +138,8 @@ export type Image = typeof images.$inferSelect
 export type UserFlag = typeof userFlags.$inferSelect
 export type NewUserFlag = typeof userFlags.$inferInsert
 export type ContactFlag = typeof contactFlags.$inferSelect
+export type Date = typeof dates.$inferSelect
+export type NewDate = typeof dates.$inferInsert
 
 // ─── Relations ────────────────────────────────────────────────────────────────
 
@@ -135,6 +147,7 @@ export const contactsRelations = relations(contacts, ({ many }) => ({
   socialHandles: many(socialHandles),
   images: many(images),
   contactFlags: many(contactFlags),
+  dates: many(dates),
 }))
 
 export const socialHandlesRelations = relations(socialHandles, ({ one }) => ({
@@ -167,5 +180,16 @@ export const contactFlagsRelations = relations(contactFlags, ({ one }) => ({
   flag: one(userFlags, {
     fields: [contactFlags.flagId],
     references: [userFlags.id],
+  }),
+}))
+
+export const datesRelations = relations(dates, ({ one }) => ({
+  user: one(user, {
+    fields: [dates.userId],
+    references: [user.id],
+  }),
+  contact: one(contacts, {
+    fields: [dates.contactId],
+    references: [contacts.id],
   }),
 }))

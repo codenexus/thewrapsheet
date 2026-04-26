@@ -6,8 +6,15 @@ const router = useRouter()
 const id = Array.isArray(route.params.id) ? route.params.id[0] : route.params.id
 
 const { data: contact, refresh } = await useFetch(`/api/contacts/${id}`)
+const { data: contactDates, refresh: refreshDates } = await useFetch(`/api/dates`, {
+  query: { contactId: id },
+  server: false,
+})
 
 const signedPhotoUrl = ref<string | null>(null)
+const showAddDate = ref(false)
+const newDate = reactive({ date: '', title: '', notes: '' })
+const addingDate = ref(false)
 
 onMounted(async () => {
   if (contact.value?.mainPhotoUrl) {
@@ -42,6 +49,36 @@ async function clearReview() {
     body: { needsReview: false },
   })
   refresh()
+}
+
+async function addDate() {
+  if (!newDate.date || !newDate.title) return
+  addingDate.value = true
+  try {
+    await $fetch('/api/dates', {
+      method: 'POST',
+      body: { contactId: id, date: newDate.date, title: newDate.title, notes: newDate.notes || null },
+    })
+    newDate.date = ''
+    newDate.title = ''
+    newDate.notes = ''
+    showAddDate.value = false
+    refreshDates()
+  } finally {
+    addingDate.value = false
+  }
+}
+
+async function deleteDate(dateId: string) {
+  if (!confirm('Delete this date entry?')) return
+  await $fetch(`/api/dates/${dateId}`, { method: 'DELETE' })
+  refreshDates()
+}
+
+function formatDate(date: string) {
+  return new Date(date + 'T00:00:00').toLocaleDateString('en-US', {
+    month: 'long', day: 'numeric', year: 'numeric',
+  })
 }
 
 function formatPhone(phone: string | null) {
@@ -179,6 +216,54 @@ function calculateAge(birthday: string) {
           <h2 class="section-title">Notes</h2>
           <div class="notes-block">{{ contact.notes }}</div>
         </div>
+
+        <div class="info-section">
+          <div class="section-title-row">
+            <h2 class="section-title">Dates</h2>
+            <button class="btn btn-secondary btn-sm" @click="showAddDate = !showAddDate">
+              {{ showAddDate ? 'Cancel' : '+ Add Date' }}
+            </button>
+          </div>
+
+          <div v-if="showAddDate" class="add-date-form">
+            <div class="add-date-fields">
+              <input
+                v-model="newDate.date"
+                type="date"
+                class="date-input"
+              />
+              <input
+                v-model="newDate.title"
+                type="text"
+                placeholder="What did you do?"
+                class="date-title-input"
+              />
+            </div>
+            <input
+              v-model="newDate.notes"
+              type="text"
+              placeholder="Notes (optional)"
+              class="date-notes-input"
+            />
+            <button class="btn btn-primary btn-sm" :disabled="addingDate || !newDate.date || !newDate.title" @click="addDate">
+              {{ addingDate ? 'Saving...' : 'Save' }}
+            </button>
+          </div>
+
+          <div v-if="contactDates?.length" class="dates-list">
+            <div v-for="d in contactDates" :key="d.id" class="date-row">
+              <div class="date-info">
+                <div class="date-title">{{ d.title }}</div>
+                <div class="date-when">{{ formatDate(d.date) }}</div>
+                <div v-if="d.notes" class="date-notes">{{ d.notes }}</div>
+              </div>
+              <button class="btn btn-ghost danger btn-sm" @click="deleteDate(d.id)">✕</button>
+            </div>
+          </div>
+          <div v-else-if="!showAddDate" class="empty-dates">
+            No dates logged yet.
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -299,14 +384,21 @@ function calculateAge(birthday: string) {
 
 .info-section { margin-bottom: 2rem; }
 
+.section-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
 .section-title {
   font-family: var(--font-display);
   font-size: 1.1rem;
   color: var(--yellow);
-  margin-bottom: 0.75rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid var(--border);
   letter-spacing: 0.03em;
+  margin: 0;
 }
 
 .info-grid {
@@ -350,5 +442,80 @@ function calculateAge(birthday: string) {
 
 .phone-action:hover {
   opacity: 1;
+}
+
+.add-date-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.add-date-fields {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.date-input {
+  width: 160px;
+  flex-shrink: 0;
+}
+
+.date-title-input {
+  flex: 1;
+  min-width: 160px;
+}
+
+.date-notes-input {
+  width: 100%;
+}
+
+.dates-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.date-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 1rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.date-info { flex: 1; }
+
+.date-title {
+  font-weight: 600;
+  color: var(--text);
+  font-size: 0.95rem;
+}
+
+.date-when {
+  font-size: 0.8rem;
+  color: var(--yellow);
+  margin-top: 0.2rem;
+}
+
+.date-notes {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin-top: 0.25rem;
+  font-style: italic;
+}
+
+.empty-dates {
+  font-size: 0.875rem;
+  color: var(--text-dim);
+  padding: 0.5rem 0;
 }
 </style>

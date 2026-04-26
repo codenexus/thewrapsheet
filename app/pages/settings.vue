@@ -117,6 +117,14 @@ async function changePassword() {
     passwordSaving.value = false
   }
 }
+
+const copied = ref(false)
+
+async function copyFeedUrl() {
+  await navigator.clipboard.writeText(`webcal://thewrapsheet.app/api/calendar/feed?token=${me.value?.inboundAlias}`)
+  copied.value = true
+  setTimeout(() => copied.value = false, 2000)
+}
 </script>
 
 <template>
@@ -166,6 +174,17 @@ async function changePassword() {
         <span class="flag-count">{{ flags?.length ?? 0 }} / 12</span>
       </div>
       <div v-if="flagError" class="error-msg">{{ flagError }}</div>
+    </div>
+
+    <div class="settings-section">
+      <h2 class="section-title">Calendar Feed</h2>
+      <p class="section-desc">Subscribe to this URL in your phone's calendar app to see all your dates automatically.</p>
+
+      <div v-if="me?.inboundAlias" class="calendar-feed-row">
+        <code class="feed-url">webcal://thewrapsheet.app/api/calendar/feed?token={{ me.inboundAlias }}</code>
+        <button class="btn btn-secondary" @click="copyFeedUrl">{{ copied ? '✓ Copied' : 'Copy' }}</button>
+      </div>
+      <div v-else class="error-msg">No inbound alias set — contact your admin.</div>
     </div>
 
     <div class="settings-section">
@@ -322,6 +341,25 @@ async function changePassword() {
 .flag-count {
   font-size: 0.8rem;
   color: var(--text-muted);
+}
+
+.calendar-feed-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.feed-url {
+  flex: 1;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem 0.75rem;
+  word-break: break-all;
+  min-width: 0;
 }
 
 @media (max-width: 640px) {
