@@ -47,7 +47,7 @@ function closeMenu() {
       <!-- Mobile menu -->
       <div v-if="menuOpen" class="mobile-menu">
         <NuxtLink to="/" class="mobile-link" @click="closeMenu">Contacts</NuxtLink>
-        <NuxtLink to="/review" class="nav-link">
+        <NuxtLink to="/review" class="mobile-link" @click="closeMenu">
           Review Queue
           <ClientOnly>
             <span v-if="reviewCount > 0" class="review-badge">{{ reviewCount }}</span>
