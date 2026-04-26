@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.82.0",
+    "@sentry/nuxt": "^10.50.0",
     "@supabase/supabase-js": "^2.101.1",
     "@vite-pwa/nuxt": "^1.1.1",
     "better-auth": "^1.5.6",
@@ -35,9 +36,8 @@
     },
     "onlyBuiltDependencies": [
       "@parcel/watcher",
-      "canvas",
-      "esbuild",
-      "sharp"
+      "@sentry/cli",
+      "esbuild"
     ]
   }
 }

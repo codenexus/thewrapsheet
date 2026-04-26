@@ -5,6 +5,7 @@ export default defineNuxtConfig({
     preset: 'node-server',
   },
   modules: [
+    '@sentry/nuxt/module',
     '@vite-pwa/nuxt',
   ],
   css: ['~/assets/main.css'],
@@ -42,6 +43,7 @@ export default defineNuxtConfig({
     betterAuthSecret: '',
     public: {
       betterAuthUrl: '',
+      sentryDsn: '',
     },
   },
 })

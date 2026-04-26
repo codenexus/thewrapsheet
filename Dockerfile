@@ -24,4 +24,4 @@ COPY --from=builder /app/.output ./output
 
 EXPOSE 8080
 
-CMD ["node", "./output/server/index.mjs"]
+CMD ["node", "--import", "./output/server/sentry.server.config.mjs", "./output/server/index.mjs"]
