@@ -136,7 +136,13 @@ function calculateAge(birthday: string) {
           <div class="info-grid">
             <div v-if="contact.phone" class="info-item">
               <span class="info-label">Phone</span>
-              <span class="info-value">{{ formatPhone(contact.phone) }}</span>
+              <div class="info-value phone-row">
+                <span>{{ formatPhone(contact.phone) }}</span>
+                <div class="phone-actions">
+                  <a :href="`tel:${contact.phone}`" class="phone-action" title="Call">📞</a>
+                  <a :href="`sms:${contact.phone}`" class="phone-action" title="Text">💬</a>
+                </div>
+              </div>
             </div>
             <div v-if="contact.email" class="info-item">
               <span class="info-label">Email</span>
@@ -322,5 +328,27 @@ function calculateAge(birthday: string) {
   font-size: 0.95rem;
   line-height: 1.7;
   white-space: pre-wrap;
+}
+
+.phone-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.phone-actions {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.phone-action {
+  font-size: 1.1rem;
+  text-decoration: none;
+  opacity: 0.7;
+  transition: opacity 0.15s;
+}
+
+.phone-action:hover {
+  opacity: 1;
 }
 </style>
