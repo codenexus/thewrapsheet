@@ -1,5 +1,7 @@
 import * as Sentry from '@sentry/nuxt'
 
-Sentry.init({
-  dsn: process.env.NUXT_PUBLIC_SENTRY_DSN,
-})
+if (process.env.NUXT_PUBLIC_SENTRY_DSN) {
+  Sentry.init({
+    dsn: process.env.NUXT_PUBLIC_SENTRY_DSN,
+  })
+}

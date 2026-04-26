@@ -184,7 +184,22 @@ async function copyFeedUrl() {
         <code class="feed-url">webcal://thewrapsheet.app/api/calendar/feed?token={{ me.inboundAlias }}</code>
         <button class="btn btn-secondary" @click="copyFeedUrl">{{ copied ? '✓ Copied' : 'Copy' }}</button>
       </div>
-      <div v-else class="error-msg">No inbound alias set — contact your admin.</div>
+      <div v-if="me?.inboundAlias" class="calendar-buttons">
+        <a
+          :href="`https://calendar.google.com/calendar/r?cid=webcal://thewrapsheet.app/api/calendar/feed?token=${me.inboundAlias}`"
+          target="_blank"
+          class="btn btn-secondary"
+        >Google Calendar</a>
+        <a
+          :href="`webcal://thewrapsheet.app/api/calendar/feed?token=${me.inboundAlias}`"
+          class="btn btn-secondary"
+        >Apple Calendar</a>
+        <a
+          :href="`https://outlook.office.com/calendar/0/addfromweb?url=webcal://thewrapsheet.app/api/calendar/feed?token=${me.inboundAlias}`"
+          target="_blank"
+          class="btn btn-secondary"
+        >Outlook</a>
+      </div>
     </div>
 
     <div class="settings-section">
@@ -360,6 +375,13 @@ async function copyFeedUrl() {
   padding: 0.5rem 0.75rem;
   word-break: break-all;
   min-width: 0;
+}
+
+.calendar-buttons {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+  flex-wrap: wrap;
 }
 
 @media (max-width: 640px) {
