@@ -8,6 +8,13 @@
       "when": 1775164067434,
       "tag": "0000_hard_changeling",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1777169866740,
+      "tag": "0001_cool_wallop",
+      "breakpoints": true
     }
   ]
 }

@@ -1,17 +1,24 @@
 <script setup lang="ts">
 definePageMeta({ layout: 'default' })
 
-const { data: contacts, refresh } = await useFetch('/api/contacts')
+const { data: contacts, refresh } = await useFetch('/api/contacts', {
+  server: false,
+  lazy: true,
+})
 
 const reviewQueue = computed(() =>
   contacts.value?.filter(c => c.needsReview) ?? []
 )
 
+const reviewCount = useReviewCount()
+
 async function approve(id: string) {
-  await $fetch(`/api/contacts/${id}`, {
+  await ($fetch as any)(`/api/contacts/${id}`, {
     method: 'PATCH',
-    body: { needsReview: false },
+    body: { needsReview: false, reviewReason: undefined },
   })
+  reviewCount.value = Math.max(0, reviewCount.value - 1)
+  await refreshNuxtData('/api/contacts')
   refresh()
 }
 </script>
@@ -38,8 +45,14 @@ async function approve(id: string) {
           <div class="review-details">
             <span v-if="contact.phone">📞 {{ contact.phone }}</span>
             <span v-if="contact.email">✉️ {{ contact.email }}</span>
-            <span v-if="contact.hotdog">🌭</span>
-            <span v-if="contact.taco">🌮</span>
+            <template v-if="contact.contactFlags?.length">
+              <span v-for="cf in contact.contactFlags" :key="cf.flag.id">
+                {{ cf.flag.emoji }} {{ cf.flag.label }}
+              </span>
+            </template>
+          </div>
+          <div v-if="contact.reviewReason" class="review-reason">
+            ⚠️ {{ contact.reviewReason }}
           </div>
           <div v-if="contact.notes" class="review-notes">{{ contact.notes }}</div>
         </div>
@@ -100,6 +113,13 @@ async function approve(id: string) {
   font-size: 0.875rem;
   color: var(--text-muted);
   flex-wrap: wrap;
+}
+
+.review-reason {
+  margin-top: 0.4rem;
+  font-size: 0.875rem;
+  color: var(--amber, #f59e0b);
+  font-weight: 500;
 }
 
 .review-notes {

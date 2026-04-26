@@ -80,6 +80,7 @@ export const contacts = pgTable('contacts', {
   mainPhotoUrl: text('main_photo_url'),
   notes: text('notes'),
   needsReview: boolean('needs_review').notNull().default(false),
+  reviewReason: text('review_reason'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 })

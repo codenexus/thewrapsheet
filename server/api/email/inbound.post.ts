@@ -55,6 +55,7 @@ export default defineEventHandler(async (event) => {
     email: parsed.email ?? undefined,
     notes: parsed.notes ?? undefined,
     needsReview,
+    reviewReason: parsed.reviewReason ?? undefined,
   }
 
   let contactId: string

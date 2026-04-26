@@ -35,6 +35,11 @@ const groupedContacts = computed(() => {
   return Object.entries(groups).sort(([a], [b]) => a.localeCompare(b))
 })
 
+const reviewCount = useReviewCount()
+watchEffect(() => {
+  reviewCount.value = contacts.value?.filter(c => c.needsReview).length ?? 0
+})
+
 function formatPhone(phone: string | null) {
   if (!phone) return ''
   const digits = phone.replace(/\D/g, '')
