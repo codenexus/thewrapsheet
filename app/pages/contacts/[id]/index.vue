@@ -204,10 +204,18 @@ function calculateAge(birthday: string) {
 
         <div class="info-section" v-if="contact.socialHandles?.length">
           <h2 class="section-title">Social</h2>
-          <div class="info-grid">
-            <div v-for="handle in contact.socialHandles" :key="handle.id" class="info-item">
-              <span class="info-label">{{ handle.platform }}</span>
-              <span class="info-value">{{ handle.handle }}</span>
+          <div class="social-handles-list">
+            <div v-for="handle in contact.socialHandles" :key="handle.id" class="social-handle-row">
+              <div class="social-handle-platform">
+                <template v-if="usePlatformIcon(handle.platform).type === 'icon'">
+                  <img :src="usePlatformIcon(handle.platform).url" :alt="handle.platform" class="platform-icon-lg" />
+                </template>
+                <template v-else>
+                  <span class="platform-abbr-lg">{{ usePlatformIcon(handle.platform).abbr }}</span>
+                </template>
+                <span class="social-platform-name">{{ handle.platform }}</span>
+              </div>
+              <span class="social-handle-value">{{ handle.handle }}</span>
             </div>
           </div>
         </div>
@@ -517,5 +525,57 @@ function calculateAge(birthday: string) {
   font-size: 0.875rem;
   color: var(--text-dim);
   padding: 0.5rem 0;
+}
+
+.social-handles-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.social-handle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 0.75rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+
+.social-handle-platform {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.platform-icon-lg {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+  opacity: 0.8;
+}
+
+.platform-abbr-lg {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.15rem 0.35rem;
+  min-width: 20px;
+  text-align: center;
+}
+
+.social-platform-name {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.social-handle-value {
+  font-size: 0.875rem;
+  color: var(--text-muted);
 }
 </style>

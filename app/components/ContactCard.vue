@@ -58,8 +58,19 @@ function calculateAge(birthday: string | null) {
         {{ calculateAge(contact.birthday) }} years old
       </div>
       <div v-if="contact.socialHandles?.length" class="contact-socials">
-        <span v-for="handle in contact.socialHandles.slice(0, 2)" :key="handle.id" class="social-pill">
-          {{ handle.platform }}
+        <span
+          v-for="handle in contact.socialHandles.slice(0, 4)"
+          :key="handle.id"
+          class="social-icon"
+          :title="handle.platform"
+          @click.stop
+        >
+          <template v-if="usePlatformIcon(handle.platform).type === 'icon'">
+            <img :src="usePlatformIcon(handle.platform).url" :alt="handle.platform" class="platform-icon" />
+          </template>
+          <template v-else>
+            <span class="platform-abbr">{{ usePlatformIcon(handle.platform).abbr }}</span>
+          </template>
         </span>
       </div>
     </div>
@@ -177,15 +188,33 @@ function calculateAge(birthday: string | null) {
   gap: 0.4rem;
   margin-top: 0.35rem;
   flex-wrap: wrap;
+  align-items: center;
 }
 
-.social-pill {
-  font-size: 0.7rem;
-  padding: 0.1rem 0.5rem;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 999px;
+.social-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+}
+
+.platform-icon {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+  opacity: 0.7;
+}
+
+.platform-abbr {
+  font-size: 0.6rem;
+  font-weight: 700;
   color: var(--text-muted);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.1rem 0.25rem;
+  line-height: 1.4;
 }
 
 .contact-indicators {
